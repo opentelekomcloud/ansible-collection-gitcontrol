@@ -1,15 +1,16 @@
+---
 namespace: opentelekomcloud
 name: gitcontrol
-version: 0.0.1
+version: 0.0.1-dev3
 readme: README.rst
 authors:
-- Anton Sidenlnikov (@anton-sidelnikov)
-- Artem Goncharov (@gtema)
+  - Anton Sidenlnikov (@anton-sidelnikov)
+  - Artem Goncharov (@gtema)
 
 description: Roles for managing GitHub organizations using Ansible
 license:
-- GPL-2.0-or-later
-tags: 
+  - GPL-2.0-or-later
+tags:
   - github
   - opentelekomcloud
 dependencies: {}
@@ -18,7 +19,7 @@ documentation: http://docs.otc-service.com
 homepage: https://open-telekom-cloud.com
 issues: http://github.com/opentelekomcloud-infra/ansible-collection-gitcontrol/issue/tracker
 build_ignore:
-  - "*.tar.gz"
+  - '*.tar.gz'
   - build_artifact/
   - ci/
   - galaxy.yml.in

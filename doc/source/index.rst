@@ -132,15 +132,14 @@ Protection rules can be setted up through templates which should exist in **/tem
 How to use it
 -------------
 
-As a prerequisite, a [PAT](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token)
+As a prerequisite, a `PAT <https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token>`_
 must be created. The rights `repo` and `admin:org`  are required.
-
-Firstly:
-- `export GITHUB_TOKEN="github-token"`
-- `export GITHUB_USER="github-username"`
 
 To apply changes in your organization repositories run:
 
 .. code-block:: yaml
 
-   ansible-playbook playbooks/run.yml -e github_repos_state=present
+   ansible-playbook playbooks/run.yaml \
+     -e github_repos_state=present \
+     -e gitstyring_root_dir=../org \
+     -e gitub_token=SECRET
