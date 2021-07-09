@@ -83,12 +83,16 @@ def manage_collaborators(github_api, owner, repo_name, repo):
     return print(output, file=sys.stderr)
 
 
-def update_branch_protection(github_api, owner, repo_name, repo):
+def update_branch_protection(
+    github_api, owner, repo_name, repo, templates_path
+):
     headers = {**default_headers, **{'Accept': 'application/vnd.github.luke-cage-preview+json'}}
     output = ''
     rules = repo[repo_name]['protection_rules']
     if isinstance(rules, str):
-        rules = {repo[repo_name]['default_branch']: read_yaml_file(f'./templates/{rules}.yml')}
+        rules = {
+            repo[repo_name]['default_branch']:
+            read_yaml_file(f'{templates_path}/{rules}.yml')}
     branch_name = list(rules)[0]
     if 'who_can_push' in rules[branch_name]:
         rules[branch_name]['restrictions'] = rules[branch_name].pop('who_can_push')
@@ -217,7 +221,10 @@ if __name__ == '__main__':
             github_api=args.github_api_url,
             owner=args.org,
             repo_name=args.repo,
-            repo=read_yaml_file(path=args.root, org=args.org, repo_name=args.repo, endpoint=args.endpoint)
+            repo=read_yaml_file(
+                path=args.root, org=args.org,
+                repo_name=args.repo, endpoint=args.endpoint),
+            templates_path=f'{args.root}/../templates/'
         )
     if args.endpoint == 'options':
         update_options(

@@ -3,12 +3,14 @@
   when: github_repos_state == 'present'
   with_dict: "{{ orgs }}"
   loop_control:
-    loop_var: org
-  include_tasks: repo-present.yml
+    loop_var: "org"
+    label: "{{ org.key }}"
+  include_tasks: repo-present.yaml
 
 - name: "Update teams in {{ orgs.keys() | list }}"
   when: github_teams_state == 'present'
   with_dict: "{{ orgs }}"
   loop_control:
-    loop_var: org
-  include_tasks: teams-present.yml
+    loop_var: "org"
+    label: "{{ org.key }}"
+  include_tasks: teams-present.yaml

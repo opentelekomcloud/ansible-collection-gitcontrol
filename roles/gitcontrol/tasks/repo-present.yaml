@@ -9,7 +9,8 @@
     url: "{{ github_api }}/repos/{{ org.key }}/{{ repo.key }}"
   when: "'repositories' in org.value"
   loop_control:
-    loop_var: repo
+    loop_var: "repo"
+    label: "{{ repo.key }}"
   with_dict: "{{ org.value.repositories }}"
   register: response
 

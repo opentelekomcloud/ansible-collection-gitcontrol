@@ -6,4 +6,4 @@
       - ansible-collection
     vars:
       ansible_collection_namespace: "opentelekomcloud"
-      ansible_collection_name: "cloud"
+      ansible_collection_name: "gitcontrol"

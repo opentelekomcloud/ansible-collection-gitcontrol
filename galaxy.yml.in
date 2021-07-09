@@ -12,7 +12,7 @@ license:
 tags: 
   - github
   - opentelekomcloud
-dependencies:
+dependencies: {}
 repository: http://github.com/opentelekomcloud-infra/ansible-collection-gitcontrol
 documentation: http://docs.otc-service.com
 homepage: https://open-telekom-cloud.com

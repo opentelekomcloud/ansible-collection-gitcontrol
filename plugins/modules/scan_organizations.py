@@ -10,7 +10,8 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             path=dict(type='str', required=True)
-        )
+        ),
+        supports_check_mode=True
     )
 
     output = {}

@@ -89,7 +89,7 @@ Describe your repositories in `orgs/my_org/repositories/my_repo.yml`, file name 
          allow_deletions: false
 
 
-Protection rules can be setted up through templates which should exist in **playbooks/templates**
+Protection rules can be setted up through templates which should exist in **/templates**
 
 .. code-block:: yaml
 
@@ -127,6 +127,7 @@ Protection rules can be setted up through templates which should exist in **play
      protection_rules: template_name
 
 * Those teams and collaborators should exist in organization.
+
 
 How to use it
 -------------
