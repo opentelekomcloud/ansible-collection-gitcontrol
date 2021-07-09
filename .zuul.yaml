@@ -5,6 +5,5 @@
     templates:
       - ansible-collection
     vars:
-      ansible_collection_namespace: fake
-      ansible_collection_name: fake
-
+      ansible_collection_namespace: "opentelekomcloud"
+      ansible_collection_name: "cloud"

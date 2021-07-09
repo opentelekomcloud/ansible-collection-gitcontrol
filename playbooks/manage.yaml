@@ -1,0 +1,32 @@
+---
+- name: Prepare github config
+  hosts: localhost
+  tasks:
+    - name: Register root dir
+      set_fact:
+        # yamllint disable-line rule:line-length
+        root_dir: "{{ lookup('env', 'GITSTYRING_ROOT_DIR')|default('../orgs') }}"
+
+- name: Prepare github config
+  hosts: localhost
+  tasks:
+    - name: Gather orgs info
+      opentelekomcloud.gitcontrol.scan_organizations:
+        path: "{{ root_dir }}"
+      register: out
+
+    - name: Register orgs structure
+      set_fact:
+        structure: "{{ out }}"
+
+- name: Manage orgs
+  hosts: localhost
+  gather_facts: false
+  roles:
+    - opentelekomcloud.gitcontrol.gitcontrol
+  vars:
+    orgs: "{{ structure.data }}"
+    github_user: "{{ lookup('env', 'GITHUB_USER') }}"
+    github_token: "{{ lookup('env', 'GITHUB_TOKEN') }}"
+    # yamllint disable-line rule:line-length
+    github_api: "{{ lookup('env', 'GITHUB_API_URL')|default('https://api.github.com', true) }}"

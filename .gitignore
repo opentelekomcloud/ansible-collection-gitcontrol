@@ -1,3 +1,5 @@
+*.pyc
+__pycache__
 .tox
 build_artifact
 ansible_collections
@@ -6,4 +8,7 @@ FILES.json
 MANIFEST.json
 importer_result.json
 **.swp
+
 *.tar.gz
+doc/build
+tmp

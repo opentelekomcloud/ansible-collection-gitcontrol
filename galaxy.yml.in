@@ -1,22 +1,22 @@
-namespace: fake
-name: fake
+namespace: opentelekomcloud
+name: gitcontrol
 version: 0.0.1
 readme: README.md
 authors:
-- _CHANGEME_
+- Anton Sidenlnikov (@anton-sidelnikov)
+- Artem Goncharov (@gtema)
 
-description: _CHANGEME_
+description: Roles for managing GitHub organizations using Ansible
 license:
 - Apache-2.0
 tags: 
-  - cloud
-  - openstack
+  - github
   - opentelekomcloud
 dependencies:
-repository: http://github.com/opentelekomcloud/ansible-collection-template
-documentation: http://docs.otc.t-systems.com
+repository: http://github.com/opentelekomcloud-infra/ansible-collection-gitcontrol
+documentation: http://docs.otc-service.com
 homepage: https://open-telekom-cloud.com
-issues: http://github.com/opentelekomcloud/ansible-collection-template/issue/tracker
+issues: http://github.com/opentelekomcloud-infra/ansible-collection-gitcontrol/issue/tracker
 build_ignore:
   - "*.tar.gz"
   - build_artifact/
