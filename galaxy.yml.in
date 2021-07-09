@@ -1,0 +1,33 @@
+namespace: fake
+name: fake
+version: 0.0.1
+readme: README.md
+authors:
+- _CHANGEME_
+
+description: _CHANGEME_
+license:
+- Apache-2.0
+tags: 
+  - cloud
+  - openstack
+  - opentelekomcloud
+dependencies:
+repository: http://github.com/opentelekomcloud/ansible-collection-template
+documentation: http://docs.otc.t-systems.com
+homepage: https://open-telekom-cloud.com
+issues: http://github.com/opentelekomcloud/ansible-collection-template/issue/tracker
+build_ignore:
+  - "*.tar.gz"
+  - build_artifact/
+  - ci/
+  - galaxy.yml.in
+  - setup.cfg
+  - setup.py
+  - tools
+  - tox.ini
+  - .gitignore
+  - .gitreview
+  - .zuul.yaml
+  - .pytest_cache
+  - importer_result.json

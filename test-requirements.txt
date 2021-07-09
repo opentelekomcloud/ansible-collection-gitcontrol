@@ -1,0 +1,11 @@
+ansible-base
+pbr
+pycodestyle
+flake8
+pylint
+voluptuous
+yamllint
+rstcheck
+ruamel.yaml
+# galaxy-importer
+tox
