@@ -141,7 +141,7 @@ class Repo(GitBase):
         return False
 
     def _get_privs(self, mapping):
-        """Convert teams/collabirators mapping into entity/priv mapping"""
+        """Convert teams/collaborators mapping into entity/priv mapping"""
         privs = dict()
         for k, v in mapping.items():
             for priv in ['maintain', 'pull', 'push', 'admin', 'triage']:
