@@ -1,0 +1,17 @@
+---
+- hosts: localhost
+  tasks:
+    - name: manage people
+      opentelekomcloud.gitcontrol.members:
+        root: "{{ gitstyring_root_dir }}"
+        token: "{{ github_token }}"
+
+    - name: manage teams
+      opentelekomcloud.gitcontrol.teams:
+        root: "{{ gitstyring_root_dir }}"
+        token: "{{ github_token }}"
+
+    - name: manage repositories
+      opentelekomcloud.gitcontrol.repositories:
+        root: "{{ gitstyring_root_dir }}"
+        token: "{{ github_token }}"

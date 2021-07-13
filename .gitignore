@@ -3,7 +3,6 @@ __pycache__
 .tox
 build_artifact
 ansible_collections
-galaxy.yml
 FILES.json
 MANIFEST.json
 importer_result.json
@@ -12,3 +11,4 @@ importer_result.json
 *.tar.gz
 doc/build
 tmp
+tests/output
