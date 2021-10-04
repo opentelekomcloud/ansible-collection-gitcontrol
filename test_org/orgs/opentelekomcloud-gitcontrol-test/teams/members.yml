@@ -1,0 +1,11 @@
+---
+teams:
+  storage:
+    description: Test team
+    visibility: closed
+    privacy: closed
+    parent:
+    maintainer:
+      - gtema
+    member:
+      - g2tema

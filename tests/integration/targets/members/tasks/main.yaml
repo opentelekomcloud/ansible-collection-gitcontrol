@@ -1,0 +1,5 @@
+- block:
+  - name: Apply users
+    opentelekomcloud.gitcontrol.members:
+      root: "{{ root }}"
+      token: "{{ token }}"

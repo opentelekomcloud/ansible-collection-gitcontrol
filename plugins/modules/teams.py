@@ -68,6 +68,7 @@ class TeamsModule(GitBase):
                             parent=team_dict.get('parent'),
                             maintainers=team_dict.get('maintainer')
                         )
+                        current_team = team_slug
                 else:
                     for t in current_teams:
                         if t['name'] == team:
@@ -77,7 +78,7 @@ class TeamsModule(GitBase):
                         # Not able to cope with wanted team, try others
                         continue
 
-                    team_slug = current_team['slug']
+                team_slug = current_team['slug']
 
                 status[owner][team] = dict()
                 status[owner][team]['description'] = current_team

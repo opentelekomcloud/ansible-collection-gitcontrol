@@ -1,0 +1,5 @@
+- block:
+  - name: Apply Teams
+    opentelekomcloud.gitcontrol.teams:
+      root: "{{ root }}"
+      token: "{{ token }}"

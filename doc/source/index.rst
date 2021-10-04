@@ -128,12 +128,61 @@ Protection rules can be setted up through templates which should exist in **/tem
 
 * Those teams and collaborators should exist in organization.
 
+Users
+-----
+
+Under the `ROOT/ORG_NAME/users/members.yml` a yaml file describing desired
+users must be placed
+
+.. code-block:: yaml
+
+   users:
+     - name: "xyz zxy"
+       login: "xyz-zxy"
+       visibility: Public
+       role: Member
+
+A second file `ROOT/ORG_NAME/users/dismissed_members.yaml` must be also placed
+with currently only dummy content (removing users from organizations is not yet
+supported.
+
+.. code-block:: yaml
+
+   dismissed_users: {}
+
+Teams
+-----
+
+Under the `ROOT/ORG_NAME/teams/members.yml` a file describing desired teams
+must be placed.
+
+.. code-block:: yaml
+
+   teams:
+     storage:  # Team name (slug)
+       description: Test team
+       privacy: closed  # privacy according to https://docs.github.com/en/enterprise-server@3.0/rest/reference/teams#create-a-team
+       parent:
+       maintainer:
+         - github_user
+       member:
+         - github_user
+
+A second file `ROOT/ORG_NAME/teams/dismissed_members.yaml` must be also placed
+with currently only dummy content (removing teams from organizations is not yet
+supported.
+
+.. code-block:: yaml
+
+   dissmissed_in_teams: {}
+
 
 How to use it
 -------------
 
 As a prerequisite, a `PAT <https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token>`_
-must be created. The rights `repo` and `admin:org`  are required.
+must be created. The rights `repo` and `admin:org`  are required. Root dir must
+point to the location hosting `/orgs/`
 
 To apply changes in your organization repositories run:
 
@@ -143,3 +192,20 @@ To apply changes in your organization repositories run:
      -e github_repos_state=present \
      -e gitstyring_root_dir=../org \
      -e gitub_token=SECRET
+
+Testing
+-------
+
+Testing of the collection locally can be done with the help of ansible-test
+utility. For that (under assumption of proper checkout location or setting
+environment variables to include working directory) test invokation can be
+executed as: `ansible-test integration members` or `ansible-test integration
+members`.
+
+Testing assumes local configuration is prepared in the
+tests/integration/integration_config.yml` file:
+
+.. code-block:: yaml
+
+   root: "<CHECKOUT_DIRECTORY>/test_org"
+   token: "<TESTING_TOKEN>"
