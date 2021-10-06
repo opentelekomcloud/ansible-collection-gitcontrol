@@ -1,4 +1,10 @@
 - block:
+  - name: Apply Teams - check mode
+    opentelekomcloud.gitcontrol.teams:
+      root: "{{ root }}"
+      token: "{{ token }}"
+    check_mode: true
+
   - name: Apply Teams
     opentelekomcloud.gitcontrol.teams:
       root: "{{ root }}"

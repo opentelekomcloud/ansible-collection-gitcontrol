@@ -12,4 +12,4 @@ importer_result.json
 doc/build
 tmp
 tests/output
-tests/integration/integration_config.*
+tests/integration/integration_config.yml

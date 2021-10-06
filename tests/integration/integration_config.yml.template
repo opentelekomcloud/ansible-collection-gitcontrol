@@ -1,3 +1,0 @@
----
-# Here come the variables definitions for the integration tests
-# It is rendered expanding ENV on the runtime bu zuul

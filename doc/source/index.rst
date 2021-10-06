@@ -137,8 +137,8 @@ users must be placed
 .. code-block:: yaml
 
    users:
-     - name: "xyz zxy"
-       login: "xyz-zxy"
+     - name: "User1"
+       login: "usr1"
        visibility: Public
        role: Member
 
@@ -164,9 +164,9 @@ must be placed.
        privacy: closed  # privacy according to https://docs.github.com/en/enterprise-server@3.0/rest/reference/teams#create-a-team
        parent:
        maintainer:
-         - github_user
+         - github_user1
        member:
-         - github_user
+         - github_user2
 
 A second file `ROOT/ORG_NAME/teams/dismissed_members.yaml` must be also placed
 with currently only dummy content (removing teams from organizations is not yet

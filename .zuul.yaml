@@ -1,9 +1,58 @@
 # yamllint disable
 ---
+- job:
+    name: gitcontrol-test-integration
+    parent: ansible-collection-test-integration
+    description: |
+      Execute ansible-test integration for the collection
+    vars:
+      ansible_test_test_command: "integration"
+      ansible_test_no_temp_unicode: true
+    pre-run: tests/playbooks/pre.yaml
+    secrets:
+      - secret: gitcontrol-secret
+        name: gitcontrol
+
+- secret:
+    name: gitcontrol-secret
+    data:
+      token: !encrypted/pkcs1-oaep
+        - QduY2mJaxznljZMLGoGE/LcHwb0Fk4QRcqX8DY+a8i320Rl0GdRE9yfFwkxfdFQ245UXT
+          ZgcnHsuofTCbRQOWkt5eEN/+OqKqgvtDyP2QmOfOksbTUhnpWR1jV9/wDgqXIKTH7USgf
+          EQbnaSBYCgUTIi2BZVhJBPEtb9AvO8h1NcrhCxR4R8Cw8PJ/bOzPAgfvZ/D9067S9smgz
+          cKZyOuloBhwVRskdbj5tbvViya44cGDs13j6Dpvv1C2tgdVctM/6iHwvXyOL2PtTu5LCP
+          3OVxgZCWx3XPzgfUl+QwL5KZSaDmsU6b7v5lr89HcTDrVmu02El6sEkMbUPQ/dDB6/7LK
+          fzMxCXz17bSWehIt1ASC+e+1jkfZKXHC5ss/6ebzRESdEeYDMb/6ueq3FPNslRbKwoGTK
+          54D8fSOIagjg+F+AYJjXaozslsj5S1Uv7HgGj6Ecgv75Hcx8/jJiUsqyHazx7EZ4CDBfG
+          Lh28IR72f6JqALD01ontiYLWb7CdlxIa0zzNmmiA2oC/Zcvnef6hpSdvoFwmamY3HNUsM
+          VsvUiEJiT0uRropSKEr4q3/uKbwsqqbQ8TkWj/CaKbZ+MeIR4N4WO54r81K8W7p/3W6pt
+          qUFW1s/mMQWoYeQRh1gPHetpEgGfVP8d636Dk0hzK33vuvaJIfQdZxST7hkmuw=
+
 - project:
     merge-mode: squash-merge
-    templates:
-      - ansible-collection
     vars:
       ansible_collection_namespace: "opentelekomcloud"
       ansible_collection_name: "gitcontrol"
+    check:
+      jobs:
+        - otc-tox-pep8
+        - tox-linters-ansible-2.10
+        - ansible-collection-build
+        - ansible-collection-docs
+    check-post:
+      jobs:
+        - gitcontrol-test-integration
+    gate:
+      jobs:
+        - otc-tox-pep8
+        - tox-linters-ansible-2.10
+        - ansible-collection-build
+        - ansible-collection-docs
+        - gitcontrol-test-integration
+    release:
+      jobs:
+        - release-ansible-collection
+    promote:
+      jobs:
+        - promote-ansible-collection-docs
+
