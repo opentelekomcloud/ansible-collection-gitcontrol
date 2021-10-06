@@ -198,7 +198,7 @@ class GitBase:
         if rsp.status_code not in [201]:
             self.save_error(f"Cannot create team {name}: {rsp.text}")
         else:
-            return rsp.json()['slug']
+            return rsp.json()
 
     def update_team(
         self, owner, team, **kwargs

@@ -37,6 +37,17 @@ class TeamsModule(GitBase):
         supports_check_mode=True
     )
 
+    def is_team_update_necessary(self, team_dict, current_team):
+        if (
+            team_dict.get('description') != current_team.get('description')
+        ):
+            return True
+        if (
+            team_dict.get('privacy') != current_team.get('privacy')
+        ):
+            return True
+        return False
+
     def run(self):
         status = dict()
         changed = False
@@ -54,13 +65,14 @@ class TeamsModule(GitBase):
             # Go over teams required to exist
             for team, team_dict in owner_dict['present']['teams'].items():
                 current_team = None
+                team_slug = None
                 if team not in [x['slug'] for x in current_teams]:
                     changed = True
                     # Create new team
                     if self.ansible.check_mode:
-                        team_slug = team
+                        current_team = team
                     else:
-                        team_slug = self.create_team(
+                        current_team = self.create_team(
                             owner=owner,
                             name=team,
                             description=team_dict.get('description'),
@@ -68,25 +80,23 @@ class TeamsModule(GitBase):
                             parent=team_dict.get('parent'),
                             maintainers=team_dict.get('maintainer')
                         )
+                        team_slug = current_team['slug']
                 else:
                     for t in current_teams:
                         if t['name'] == team:
                             current_team = t
+                            team_slug = t['slug']
                             break
                     if not current_team:
                         # Not able to cope with wanted team, try others
                         continue
 
-                    team_slug = current_team['slug']
-
                 status[owner][team] = dict()
                 status[owner][team]['description'] = current_team
 
                 if (
-                    ('description' in team_dict
-                     and team_dict['description'] != current_team['description'])
-                    or ('privacy' in team_dict
-                        and team_dict['privacy'] != current_team['privacy'])
+                    team_slug
+                    and self.is_team_update_necessary(team_dict, current_team)
                 ):
                     # Update Team
                     changed = True
@@ -94,14 +104,21 @@ class TeamsModule(GitBase):
                         self.update_team(owner, team_slug, **team_dict)
                     status[owner][team]['status'] = 'updated'
 
-                current_members = [
-                    x['login'] for x in self.get_team_members(
-                        owner, team_slug, role='member')
-                ]
-                current_maintainers = [
-                    x['login'] for x in self.get_team_members(
-                        owner, team_slug, role='maintainer')
-                ]
+                if team_slug:
+                    current_members = [
+                        x['login'] for x in self.get_team_members(
+                            owner, team_slug, role='member')
+                    ]
+                else:
+                    current_members = []
+
+                if team_slug:
+                    current_maintainers = [
+                        x['login'] for x in self.get_team_members(
+                            owner, team_slug, role='maintainer')
+                    ]
+                else:
+                    current_maintainers = []
 
                 status[owner][team]['members'] = dict()
                 for login in team_dict['member']:

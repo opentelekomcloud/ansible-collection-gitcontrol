@@ -1,0 +1,7 @@
+- hosts: all
+  tasks:
+    - name: Write integration_config.yml file
+      template:
+        src: "integration_config.yml.j2"
+        dest: "~/.ansible/collections/ansible_collections/{{ ansible_collection_namespace }}/{{ ansible_collection_name}}/tests/integration/integration_config.yml"
+      no_log: true
