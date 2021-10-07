@@ -77,6 +77,7 @@ class GitBase:
             self.ansible.fail_json(msg=msg, errors=self.errors)
 
     def save_error(self, msg):
+        self.ansible.log(msg)
         self.errors.append(msg)
 
     def get_config(self):
@@ -156,8 +157,10 @@ class GitBase:
             headers = dict()
 
         headers.update({
-            'Authorization': f"token {self.params['token']}"}
-        )
+            'Authorization': f"token {self.params['token']}"
+        })
+        if not 'Accept' in headers:
+            headers['Accept'] = 'application/vnd.github.v3+json'
 
         if not url.startswith('http'):
             url = f"{self.gh_url}/{url}"
@@ -348,15 +351,33 @@ class GitBase:
         user = self._users_cache.get(login)
         return user
 
-    def get_repo(self, owner, repo):
+    def get_repo(self, owner, repo, ignore_missing=False):
         """Get repository information"""
         rsp = self.request(
             method='GET',
             url=f"repos/{owner}/{repo}",
         )
         if rsp.status_code not in [200]:
+            if ignore_missing and rsp.status_code == 404:
+                return None
             self.save_error(
                 f"Repo {repo}@{owner} cannot be fetched: {rsp.text}")
+            return None
+
+        return rsp.json()
+
+    def create_repo(self, owner, repo, **args):
+        if not args:
+            args = dict()
+        args['name'] = repo
+        rsp = self.request(
+            method='POST',
+            url=f"orgs/{owner}/repos",
+            json=args
+        )
+        if rsp.status_code not in [200, 201, 202]:
+            self.save_error(
+                f"Repo {repo}@{owner} cannot be created: {rsp.text}")
             return None
 
         return rsp.json()

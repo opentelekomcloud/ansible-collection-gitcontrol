@@ -1,0 +1,18 @@
+- block:
+  - name: Apply Repositories - check mode
+    opentelekomcloud.gitcontrol.repositories:
+      root: "{{ root }}"
+      token: "{{ token }}"
+    check_mode: true
+
+  - name: Apply Repositories
+    opentelekomcloud.gitcontrol.repositories:
+      root: "{{ root }}"
+      token: "{{ token }}"
+    register: repos
+
+  - name: Apply Repositories - Idempotency check
+    opentelekomcloud.gitcontrol.repositories:
+      root: "{{ root }}"
+      token: "{{ token }}"
+    register: repos

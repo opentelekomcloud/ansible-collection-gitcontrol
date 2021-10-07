@@ -132,32 +132,39 @@ class Repo(GitBase):
 
         return False
 
-    def _is_repo_access_update_needed(self, current, target):
-        if current != target:
-            return True
-        for priv in ['maintain', 'pull', 'push', 'admin']:
-            if current[priv] != target[priv]:
-                return True
-        return False
-
     def _get_privs(self, mapping):
         """Convert teams/collaborators mapping into entity/priv mapping"""
         privs = dict()
         for k, v in mapping.items():
             for priv in ['maintain', 'pull', 'push', 'admin', 'triage']:
                 if isinstance(v, list):
-                    for entity in v:
-                        if entity not in privs:
-                            privs[entity] = dict(
+                    for team in v:
+                        if team not in privs:
+                            privs[team] = dict(
                                 admin=False, pull=False,
                                 push=False, maintain=False, triage=False)
                         if (
                             priv in mapping
                             and isinstance(mapping[priv], list)
-                            and entity in mapping[priv]
+                            and team in mapping[priv]
                         ):
-                            privs[entity][priv] = True
+                            privs[team][priv] = True
         return privs
+
+    def _pick_priv_from_dict(self, privs_dict):
+        """Knowing hash of individual privileges return the one (first match)
+        which is true.
+
+        dict(admin=False, pull=False, push=True, maintain=False) will return
+        "push"
+        """
+        if privs_dict.get("push") and privs_dict.get("pull"):
+            return "push"
+        for k, v in privs_dict.items():
+            # permission setting is not getting hash, but
+            # single value
+            if v:
+                return k
 
     def run(self):
         config = self.get_config()
@@ -168,24 +175,49 @@ class Repo(GitBase):
             status[owner] = dict()
             for repo, repo_dict in val['repositories'].items():
                 status[owner][repo] = dict()
-                current_repo = self.get_repo(owner, repo)
+                current_repo = self.get_repo(owner, repo, ignore_missing=True)
 
                 if not current_repo:
-                    # Creation not supported for now
-                    continue
+                    if not self.ansible.check_mode:
+                        repo_args = dict(
+                            description=repo_dict.get('description'),
+                            homepage=repo_dict.get('homepage'),
+                            private=repo_dict.get('private', False),
+                            visibility=repo_dict.get('visibility', 'public'),
+                            has_issues=repo_dict.get('has_issues', True),
+                            has_projects=repo_dict.get('has_projects', True),
+                            has_wiki=repo_dict.get('has_wiki', True),
+                            # is_template=repo_dict.get('is_template', False),
+                            auto_init=repo_dict.get('auto_init', False),
+                            allow_squash_merge=repo_dict.get(
+                                'allow_squash_merge', True),
+                            allow_merge_commit=repo_dict.get(
+                                'allow_merge_commit', True),
+                            allow_rebase_merge=repo_dict.get(
+                                'allow_rebase_merge', True),
+                            allow_auto_merge=repo_dict.get(
+                                'allow_auto_merge', False),
+                            delete_branch_on_merge=repo_dict.get(
+                                'delete_branch_on_merge', False)
+                        )
+                        for k in ['gitignore_template', 'license_template']:
+                            if k in repo_dict:
+                                repo_args[k] = repo_dict[k]
+                        current_repo = self.create_repo(
+                            owner, repo, **repo_args)
 
-                if current_repo['archived']:
+                if current_repo and current_repo.get('archived', False):
                     # Not doing anything on archived repos
                     continue
 
-                if self._is_repo_update_needed(current_repo, repo_dict):
+                if current_repo and self._is_repo_update_needed(current_repo, repo_dict):
                     changed = True
                     if not self.ansible.check_mode:
                         self.update_repo(owner, repo, **repo_dict)
                 # Current state is too huge to return it
                 status[owner][repo]['description'] = repo_dict
 
-                if 'topics' in repo_dict:
+                if current_repo and 'topics' in repo_dict:
                     current_topics = self.get_repo_topics(owner, repo)
                     if set(repo_dict['topics']) != set(current_topics):
                         changed = True
@@ -197,40 +229,48 @@ class Repo(GitBase):
                 # TODO(gtema): collaborator management need to be done,
                 # but we have not proper data structure (team, collaborator,
                 # outside collaborator)
-                if 'teams' in repo_dict:
+                if current_repo and 'teams' in repo_dict:
                     status[owner][repo]['teams'] = dict()
                     privs = self._get_privs(repo_dict['teams'])
+
                     for team in self.get_repo_teams(owner, repo):
                         # TODO: need to differentiate between org teams and
                         # project teams
-                        target_privs = privs.get(team['slug'], {})
+                        # pop privs for the team to track which team is new
+                        target_privs = privs.pop(team['slug'], {})
                         if not target_privs:
                             # Delete project access from team
                             changed = True
                             if not self.ansible.check_mode:
                                 self.delete_team_repo_access(
                                     owner, team['slug'], repo)
-                        for k, v in target_privs.items():
-                            # permission setting is not getting hash, but
-                            # single vakue
-                            if v:
-                                target_priv = k
-                                break
+                        target_priv = self._pick_priv_from_dict(target_privs)
                         if (
                             target_priv
-                            and self._is_repo_access_update_needed(
-                                team['permissions'],
-                                target_privs)
+                            and self._pick_priv_from_dict(
+                                team['permissions']) != target_priv
                         ):
                             changed = True
                             if not self.ansible.check_mode:
                                 self.update_team_repo_permissions(
                                     owner, team=team['slug'], repo=repo,
                                     priv=target_priv)
+
                         status[owner][repo]['teams'][team['slug']] = \
                             target_priv
+                    # privs dict now contains remaining privileges
+                    for team, target_privs in privs.items():
+                        target_priv = self._pick_priv_from_dict(target_privs)
 
-                if 'protection_rules' in repo_dict:
+                        changed = True
+                        if not self.ansible.check_mode:
+                            self.update_team_repo_permissions(
+                                owner, team=team, repo=repo,
+                                priv=target_priv)
+                        status[owner][repo]['teams'][team] = \
+                            target_priv
+
+                if current_repo and 'protection_rules' in repo_dict:
                     tmpl = self.get_branch_protections(
                         repo_dict['protection_rules'])
 
