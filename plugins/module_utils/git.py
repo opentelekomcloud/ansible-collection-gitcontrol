@@ -159,7 +159,7 @@ class GitBase:
         headers.update({
             'Authorization': f"token {self.params['token']}"
         })
-        if not 'Accept' in headers:
+        if 'Accept' not in headers:
             headers['Accept'] = 'application/vnd.github.v3+json'
 
         if not url.startswith('http'):
