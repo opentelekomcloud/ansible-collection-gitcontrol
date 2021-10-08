@@ -91,7 +91,7 @@ Describe your repositories in `orgs/my_org/repositories/my_repo.yml`, file name 
 
 Protection rules can be setted up through templates which should exist in **/templates**
 
-**Note:** Please note it is not possible to set up branch protection rulesfor
+**Note:** Please note it is not possible to set up branch protection rules for
 the repository unless branch (`default_branch`) exists. This is especially the
 case for newly created repositories.
 
