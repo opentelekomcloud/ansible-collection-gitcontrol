@@ -138,18 +138,22 @@ can be placed:
 
 * Those teams and collaborators should exist in organization.
 
-Users
------
+Members
+-------
 
-Under the `ROOT/ORG_NAME/users/members.yml` a yaml file describing desired
-users must be placed
+Under the `ROOT/ORG_NAME/people/members.yml` a yaml file describing desired
+organization members with their roles must be placed. All current members and
+invites will be checked agains target state and changes in the roles will be
+applied.
+
+Current invites for members not in the target list will be cancelled. Members
+not in the target state will be reported as "Not managed".
 
 .. code-block:: yaml
 
    users:
      - name: "User1"
        login: "usr1"
-       visibility: Public
        role: Member
 
 A second file `ROOT/ORG_NAME/users/dismissed_members.yaml` must be also placed

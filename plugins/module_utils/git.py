@@ -97,6 +97,13 @@ class GitBase:
                     output.update({parent: {current_root: parsed_yaml_file}})
         return output
 
+    def _prepare_graphql_query(self, query, variables):
+        data = {
+            'query': query,
+            'variables': variables,
+        }
+        return data
+
     def get_teams(self):
         teams = dict()
         conf = self.get_config()
@@ -152,7 +159,8 @@ class GitBase:
             data = yaml.safe_load(file)
         return data
 
-    def request(self, method='GET', url=None, headers=None, timeout=15, **kwargs):
+    def request(self, method='GET', url=None, headers=None, timeout=15,
+                error_msg=None, **kwargs):
         if not headers:
             headers = dict()
 
@@ -165,8 +173,27 @@ class GitBase:
         if not url.startswith('http'):
             url = f"{self.gh_url}/{url}"
 
-        return requests.request(
+        response = requests.request(
             method, url, headers=headers, timeout=timeout, **kwargs)
+
+        if response.status_code >= 400 and response.status_code != 404:
+            if not error_msg:
+                error_msg = (
+                    f"API returned error on {url}"
+                )
+                self.save_error(f"{error_msg}: {response.text}")
+
+        return response
+
+    def paginated_request(self, url, headers=None, timeout=15, **kwargs):
+        while url:
+            response = self.request(
+                method='GET',
+                url=url, headers=headers, timeout=timeout, **kwargs
+            )
+            url = response.links.get("next", {}).get("url")
+            for item in response.json():
+                yield item
 
     def get_owner_teams(self, owner):
         """Get Team information"""
@@ -302,37 +329,54 @@ class GitBase:
 
     def get_org_members(self, owner):
         """Get organization members"""
-        rsp = self.request(
-            method='GET',
+        return self.paginated_request(
             url=f'orgs/{owner}/members',
+            error_msg="Cannot fetch organizaition members"
         )
-        if rsp.status_code not in [200]:
-            self.save_error(f"Cannot fetch organization {owner} members")
 
-        return rsp.json()
+    def update_org_membership(self, owner, username, role):
+        """Set organization membership for the user"""
+        rsp = self.request(
+            method="PUT",
+            url=f"orgs/{owner}/memberships/{username}",
+            json={"role": role},
+            error_msg=f"Membership for user {username} not updated"
+        )
+
+        if rsp.status_code not in [201, 202]:
+            return False
+
+        return True
 
     def get_org_invitations(self, owner):
         """List existing user invitations
         """
-        rsp = self.request(
-            method='GET',
+        return self.paginated_request(
             url=f"orgs/{owner}/invitations",
+            error_msg=f"Cannot fetch invitations for {owner}"
         )
-        if rsp.status_code not in [200]:
-            self.save_error(f"Cannot fetch invitations: {rsp.text}")
-            return None
 
-        return rsp.json()
-
-    def create_user_invitation(self, owner, user):
+    def create_organization_invitation(self, owner, user, role='direct_member'):
         """Send Invitation to join the org"""
         rsp = self.request(
             method='POST',
             url=f"orgs/{owner}/invitations",
-            json={'invitee_id': user['id']},
+            json={'invitee_id': user['id'], 'role': role},
         )
         if rsp.status_code not in [201, 202]:
             self.save_error(f"Member {user['id']} not invited: {rsp.text}")
+            return False
+
+        return True
+
+    def delete_org_invitation(self, owner, id):
+        """Cancel organization invitation"""
+        rsp = self.request(
+            method='DELETE',
+            url=f"orgs/{owner}/invitations/{id}",
+            error_msg=f"Organization invite {owner}/{id} not cacnelled"
+        )
+        if rsp.status_code >= 400:
             return False
 
         return True
