@@ -114,7 +114,7 @@ class MembersModule(GitBase):
                 # Invitation with wrong role - discard
                 if not self.ansible.check_mode:
                     self.delete_org_invitation(
-                        self, owner, invite['id'])
+                        owner, invite['id'])
             else:
                 return (False, 'Already invited')
 
