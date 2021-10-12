@@ -70,16 +70,18 @@ class Repo(GitBase):
             target_restrictions = target.get('retrictions')
             current_pr_review = current.get('required_pull_request_reviews')
             target_pr_review = target.get('required_pull_request_reviews')
-            if (current['required_status_checks'].get(
-                'strict', False) != target['required_status_checks'].get(
+            current_status_checks = current.get('required_status_checks', {})
+            target_status_checks = target.get('required_status_checks', {})
+            if (current_status_checks.get(
+                'strict', False) != target_status_checks.get(
                     'strict', False)):
                 return True
 
             if (
                 set(
-                    current['required_status_checks']['contexts']
+                    current_status_checks.get('contexts', [])
                 ) != set(
-                    target['required_status_checks']['contexts']
+                    target_status_checks.get('contexts', [])
                 )
             ):
                 return True
