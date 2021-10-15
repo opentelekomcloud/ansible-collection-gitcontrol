@@ -95,7 +95,7 @@ class MembersModule(GitBase):
         changed = False
         # Pop member from current members
         current_state = members.pop(login, {})
-        if (current_state['role'].lower() != role.lower()):
+        if (current_state.get('role', '').lower() != role.lower()):
             changed = True
             if not self.ansible.check_mode:
                 self.update_org_membership(
@@ -127,6 +127,7 @@ class MembersModule(GitBase):
     def run(self):
         status = dict()
         changed = False
+        invites_supported = True
 
         for owner, owner_dict in self.get_members().items():
             status[owner] = dict()
@@ -139,23 +140,41 @@ class MembersModule(GitBase):
                     errors=self.errors
                 )
 
-            current_invites = {x['login']: x for x in
-                               self.get_org_invitations(owner)}
+            try:
+                current_invites = {x['login']: x for x in
+                                   self.get_org_invitations(owner)}
+            except Exception:
+                # GH Enterprise does not support invites, no worries
+                invites_supported = False
+                current_invites = {}
 
             target_users = owner_dict['present'].get('users', [])
             for member in target_users:
                 msg = None
                 is_changed = False
                 login = member['login']
-                if login not in current_members:
-                    # Process invites
-                    (is_changed, msg) = self.process_invitee(
-                        owner, login, member['role'], current_invites
-                    )
-                else:
-                    # Process member
-                    (is_changed, msg) = self.process_member(
-                        owner, login, member['role'], current_members)
+                try:
+                    if login not in current_members:
+                        if invites_supported:
+                            # Process invites
+                            (is_changed, msg) = self.process_invitee(
+                                owner, login, member['role'], current_invites
+                            )
+                        else:
+                            changed = True
+                            msg = member['role']
+                            if not self.ansible.check_mode:
+                                self.update_org_membership(
+                                    owner, login, member['role'])
+
+                    else:
+                        # Process member
+                        (is_changed, msg) = self.process_member(
+                            owner, login, member['role'], current_members)
+                except Exception as ex:
+                    self.save_error(f"Error processing member {login}:"
+                                    f"{ex.message}")
+                    (is_changed, msg) = (False, ex.message)
 
                 status[owner][login] = msg
                 if is_changed:
