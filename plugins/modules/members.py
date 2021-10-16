@@ -158,19 +158,21 @@ class MembersModule(GitBase):
                         if invites_supported:
                             # Process invites
                             (is_changed, msg) = self.process_invitee(
-                                owner, login, member['role'], current_invites
+                                owner, login, member['role'].lower(),
+                                current_invites
                             )
                         else:
                             changed = True
                             msg = member['role']
                             if not self.ansible.check_mode:
                                 self.update_org_membership(
-                                    owner, login, member['role'])
+                                    owner, login, member['role'].lower())
 
                     else:
                         # Process member
                         (is_changed, msg) = self.process_member(
-                            owner, login, member['role'], current_members)
+                            owner, login, member['role'].lower(),
+                            current_members)
                 except Exception as ex:
                     self.save_error(f"Error processing member {login}:"
                                     f"{ex.message}")
