@@ -36,7 +36,7 @@
     check:
       jobs:
         - otc-tox-pep8
-        - tox-linters-ansible-2.10
+        - otc-tox-linters
         - ansible-collection-build
         - ansible-collection-docs
     check-post:
@@ -45,7 +45,7 @@
     gate:
       jobs:
         - otc-tox-pep8
-        - tox-linters-ansible-2.10
+        - otc-tox-linters
         - ansible-collection-build
         - ansible-collection-docs
         - gitcontrol-test-integration
@@ -55,4 +55,3 @@
     promote:
       jobs:
         - promote-ansible-collection-docs
-
