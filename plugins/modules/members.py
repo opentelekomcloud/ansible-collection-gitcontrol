@@ -80,7 +80,7 @@ class MembersModule(GitBase):
             data = response.json()["data"]["organization"]["membersWithRole"]
             for item in data["edges"]:
                 members.append({
-                    "login": item["node"]["login"],
+                    "login": item["node"]["login"].lower(),
                     "role": 'Member' if item["role"] == 'MEMBER' else 'Owner'
                 })
             if data["pageInfo"]["hasNextPage"]:
@@ -132,7 +132,7 @@ class MembersModule(GitBase):
         for owner, owner_dict in self.get_members().items():
             status[owner] = dict()
 
-            current_members = {x['login']: x for x in
+            current_members = {x['login'].lower(): x for x in
                                self.get_members_with_role(owner)}
             if current_members is None:
                 self.fail_json(
@@ -141,7 +141,7 @@ class MembersModule(GitBase):
                 )
 
             try:
-                current_invites = {x['login']: x for x in
+                current_invites = {x['login'].lower(): x for x in
                                    self.get_org_invitations(owner)}
             except Exception:
                 # GH Enterprise does not support invites, no worries
@@ -152,7 +152,7 @@ class MembersModule(GitBase):
             for member in target_users:
                 msg = None
                 is_changed = False
-                login = member['login']
+                login = member['login'].lower()
                 try:
                     if login not in current_members:
                         if invites_supported:
