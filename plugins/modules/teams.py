@@ -13,7 +13,7 @@ author: "Artem Goncharov (@gtema)"
 description:
   - Manages team members inside of the organization repository
 options:
-  token:
+  root:
     description: GitHub token
     type: str
     required: True
@@ -26,12 +26,12 @@ EXAMPLES = '''
 '''
 
 
-from ansible_collections.opentelekomcloud.gitcontrol.plugins.module_utils.git import GitBase
+from ansible_collections.opentelekomcloud.gitcontrol.plugins.module_utils.github import GitHubBase
 
 
-class TeamsModule(GitBase):
+class TeamsModule(GitHubBase):
     argument_spec = dict(
-        token=dict(type='str', required=True, no_log=True)
+        root=dict(type='str', required=False),
     )
     module_kwargs = dict(
         supports_check_mode=True
