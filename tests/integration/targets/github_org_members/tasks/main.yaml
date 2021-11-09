@@ -1,0 +1,24 @@
+---
+- module_defaults:
+    opentelekomcloud.gitcontrol.github_org_members:
+      token: "{{ token }}"
+      organization: "opentelekomcloud-gitcontrol-test"
+      members:
+        g2tema:
+          role: "member"
+        otcbot:
+          role: "owner"
+
+  block:
+    - name: Apply users - check mode
+      opentelekomcloud.gitcontrol.github_org_members:
+      check_mode: true
+
+    - name: Apply users - exclusive check mode
+      opentelekomcloud.gitcontrol.github_org_members:
+        exclusive: true
+      register: members
+      check_mode: true
+
+    - name: Apply users
+      opentelekomcloud.gitcontrol.github_org_members:
