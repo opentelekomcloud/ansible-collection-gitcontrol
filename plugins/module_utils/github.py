@@ -5,12 +5,7 @@ __metaclass__ = type
 
 
 import os
-
-try:
-    import requests
-    HAS_REQUESTS = True
-except ImportError:
-    HAS_REQUESTS = False
+import json
 
 try:
     import yaml
@@ -75,9 +70,6 @@ class GitHubBase(GitBase):
         self.gh_url = self.params['github_url']
         self.errors = []
         self._users_cache = dict()
-
-        if not HAS_REQUESTS:
-            self.fail_json(msg=missing_required_lib('requests'))
 
         if not HAS_YAML:
             self.fail_json(msg=missing_required_lib('yaml'))
@@ -165,13 +157,13 @@ class GitHubBase(GitBase):
             data = yaml.safe_load(file)
         return data
 
-    def request(self, method='GET', url=None, headers=None, timeout=15,
-                error_msg=None, **kwargs):
+    def _request(self, method, url, headers=None, **kwargs):
         if not headers:
             headers = dict()
 
         headers.update({
-            'Authorization': f"token {self.params['token']}"
+            'Authorization': f"token {self.params['token']}",
+            'Content-Type': "application/json",
         })
         if 'Accept' not in headers:
             headers['Accept'] = 'application/vnd.github.v3+json'
@@ -179,26 +171,55 @@ class GitHubBase(GitBase):
         if not url.startswith('http'):
             url = f"{self.gh_url}/{url}"
 
-        response = requests.request(
-            method, url, headers=headers, timeout=timeout, **kwargs)
+        return super()._request(
+            method=method,
+            url=url,
+            headers=headers,
+            **kwargs
+        )
 
-        if response.status_code >= 400 and response.status_code != 404:
+    def request(
+        self, method='GET', url=None, headers=None, timeout=15,
+        error_msg=None, ignore_missing=False,
+        **kwargs
+    ):
+
+        body, response, info = self._request(
+            method=method,
+            url=url,
+            headers=headers,
+            timeout=timeout,
+            **kwargs,
+        )
+
+        status = info['status']
+
+        if status >= 400 and status != 404:
             if not error_msg:
                 error_msg = (
                     f"API returned error on {url}"
                 )
-                self.save_error(f"{error_msg}: {response.text}")
-
-        return response
+                self.save_error(f"{error_msg}: {info}")
+        elif status == 404 and ignore_missing:
+            return None
+        if status == 204:
+            return response
+        elif body and status < 400:
+            return json.loads(body)
 
     def paginated_request(self, url, headers=None, timeout=15, **kwargs):
+        if not url.startswith('http'):
+            url = f"{self.gh_url}/{url}"
+
         while url:
-            response = self.request(
-                method='GET',
-                url=url, headers=headers, timeout=timeout, **kwargs
+            content, response, info = self._request(
+                url=url,
+                headers=headers,
+                timeout=timeout
             )
-            url = response.links.get("next", {}).get("url")
-            for item in response.json():
+
+            url = response.headers.get("next", {}).get("url")
+            for item in json.load(response.read()):
                 yield item
 
     def get_owner_teams(self, owner):
@@ -207,11 +228,14 @@ class GitHubBase(GitBase):
             method='GET',
             url=f'orgs/{owner}/teams',
         )
-        if rsp.status_code not in [200]:
-            self.save_error(
-                f'Cannot fetch organization {owner} teams: {rsp.text}')
+        return rsp
 
-        return rsp.json()
+    def get_team(self, owner, name, ignore_missing=False):
+        return self.request(
+            url=f"orgs/{owner}/teams/{name}",
+            error_msg="Error fetching {owner}/{team} team",
+            ignore_missing=ignore_missing
+        )
 
     def create_team(
         self, owner, name, description=None, privacy=None,
@@ -230,11 +254,17 @@ class GitHubBase(GitBase):
             method='POST',
             url=f"orgs/{owner}/teams",
             json=body,
+            error_msg=f"Error creating {owner}/{name}"
         )
-        if rsp.status_code not in [201]:
-            self.save_error(f"Cannot create team {name}: {rsp.text}")
-        else:
-            return rsp.json()
+        return rsp
+
+    def delete_team(self, owner, team):
+        """Delete Team"""
+        return self.request(
+            method='DELETE',
+            url=f"orgs/{owner}/teams/{team}",
+            error_msg=f"Error deleting team {owner}/{team}"
+        )
 
     def update_team(
         self, owner, team, **kwargs
@@ -249,89 +279,78 @@ class GitHubBase(GitBase):
         if 'privacy' in kwargs:
             body['privacy'] = kwargs['privacy']
 
-        rsp = self.request(
+        return self.request(
             method='PATCH',
             url=f"orgs/{owner}/teams/{team}",
             json=body,
+            error_msg=f"Cannot update team {team}@{owner}"
         )
-        if rsp.status_code not in [200, 201]:
-            self.save_error(f"Cannot update team {team}@{owner}: {rsp.text}")
-        else:
-            return True
 
     def get_team_members(self, owner, team, role='maintainer'):
         """Get team members"""
-        rsp = self.request(
+        return self.request(
             method='GET',
             url=(f"orgs/{owner}/"
                  f"teams/{team}/members?role={role}"),
+            error_msg=f"Cannot fetch team {team}@{owner} {role}s"
         )
-        if rsp.status_code not in [200]:
-            self.save_error(
-                f"Cannot fetch team {team}@{owner} {role}s: {rsp.text}")
-
-        return rsp.json()
 
     def get_team_repo_permissions(self, owner, team, repo):
         """Get team permissions on a repo"""
         headers = dict(
             Accept='application/vnd.github.v3.repository+json'
         )
-        rsp = self.request(
+        return self.request(
             method='GET',
             url=(f"orgs/{owner}/"
                  f"teams/{team}/projects/{owner}/{repo}"),
-            headers=headers
+            headers=headers,
+            error_msg=f"Cannot fetch team {team}@{owner}/{repo} permissions"
         )
-        if rsp.status_code not in [200]:
-            self.save_error(
-                f"Cannot fetch team {team}@{owner}/{repo} permissions: {rsp.text}")
-
-        return rsp.json()
 
     def update_team_repo_permissions(self, owner, team, repo, priv):
         """Set team permissions on a repo"""
-        rsp = self.request(
+        self.request(
             method='PUT',
             url=(f"orgs/{owner}/"
                  f"teams/{team}/repos/{owner}/{repo}"),
-            json={'permission': priv}
+            json={'permission': priv},
+            error_msg=f"Cannot update team {team}@{owner}/{repo} permissions"
         )
-        if rsp.status_code not in [200, 201, 202, 204]:
-            self.save_error(
-                f"Cannot update team {team}@{owner}/{repo} permissions: {rsp.text}")
 
         return True
 
     def delete_team_repo_access(self, owner, team, repo):
         """Delete repo access from team"""
-        rsp = self.request(
+        self.request(
             method='DELETE',
             url=(f"orgs/{owner}/"
                  f"teams/{team}/repos/{owner}/{repo}"),
+            error_msg=f"Cannot delete team {team}@{owner}/{repo} access"
         )
-        if rsp.status_code not in [200, 201, 202, 204]:
-            self.save_error(
-                f"Cannot delete team {team}@{owner}/{repo} access: {rsp.text}")
 
         return True
 
     def set_team_member(self, owner, team, login, role='member'):
         """Add user into the team
-        :returns: True if operation succeed, False otherwise
         """
-        rsp = self.request(
+        return self.request(
             method='PUT',
             url=(f"orgs/{owner}/"
                  f"teams/{team}/memberships/{login}"),
             json={'role': role},
+            error_msg=f"Membership {login}@{team} not updated"
         )
-        if rsp.status_code not in [200, 201, 202]:
-            self.save_error(
-                f"Membership {login}@{team} not updated: {rsp.text}")
-            return False
 
-        return True
+    def delete_team_member(self, owner, team, login):
+        """Add user into the team
+        """
+        return self.request(
+            method='PUT',
+            url=(f"orgs/{owner}/"
+                 f"teams/{team}/memberships/{login}"),
+            error_msg=f"Membership {login}@{team} not deleted"
+        )
 
     def get_org_members(self, owner):
         """Get organization members"""
@@ -342,17 +361,20 @@ class GitHubBase(GitBase):
 
     def update_org_membership(self, owner, username, role):
         """Set organization membership for the user"""
-        rsp = self.request(
+        return self.request(
             method="PUT",
             url=f"orgs/{owner}/memberships/{username}",
             json={"role": role},
             error_msg=f"Membership for user {username} not updated"
         )
 
-        if rsp.status_code not in [201, 202]:
-            return False
-
-        return True
+    def delete_org_membership(self, owner, username):
+        """Delete organization membership for the user"""
+        return self.request(
+            method="DELETE",
+            url=f"orgs/{owner}/memberships/{username}",
+            error_msg=f"Membership for user {username} not deleted"
+        )
 
     def get_org_invitations(self, owner):
         """List existing user invitations
@@ -364,69 +386,50 @@ class GitHubBase(GitBase):
 
     def create_organization_invitation(self, owner, user, role='direct_member'):
         """Send Invitation to join the org"""
-        rsp = self.request(
+        return self.request(
             method='POST',
             url=f"orgs/{owner}/invitations",
             json={'invitee_id': user['id'], 'role': role},
+            error_msg=f"Member {user['id']} not invited"
         )
-        if rsp.status_code not in [201, 202]:
-            self.save_error(f"Member {user['id']} not invited: {rsp.text}")
-            return False
-
-        return True
 
     def delete_org_invitation(self, owner, id):
         """Cancel organization invitation"""
-        rsp = self.request(
+        return self.request(
             method='DELETE',
             url=f"orgs/{owner}/invitations/{id}",
             error_msg=f"Organization invite {owner}/{id} not cacnelled"
         )
-        if rsp.status_code >= 400:
-            return False
-
-        return True
 
     def delete_org_member(self, owner, login):
         """Remove organization member"""
-        rsp = self.request(
+        return self.request(
             method='DELETE',
             url=f"orgs/{owner}/members/{login}",
             error_msg=f"Organization member {owner}/{login} not removed"
         )
-        if rsp.status_code >= 400:
-            return False
-
-        return True
 
     def get_user(self, login):
         """Get user info"""
         user = None
         if login not in self._users_cache:
-            rsp = self.request(
+            user = self.request(
                 method='GET',
                 url=f"users/{login}",
             )
-            if rsp.status_code == 200:
-                user = rsp.json()
+            if user:
                 self._users_cache[login] = user
         user = self._users_cache.get(login)
         return user
 
     def get_repo(self, owner, repo, ignore_missing=False):
         """Get repository information"""
-        rsp = self.request(
+        return self.request(
             method='GET',
             url=f"repos/{owner}/{repo}",
+            error_msg=f"Repo {repo}@{owner} cannot be fetched",
+            ignore_missing=ignore_missing
         )
-        if rsp.status_code not in [200]:
-            if ignore_missing and rsp.status_code == 404:
-                return None
-            self.save_error(
-                f"Repo {repo}@{owner} cannot be fetched: {rsp.text}")
-            return None
-
-        return rsp.json()
 
     def create_repo(self, owner, repo, **args):
         if not args:
@@ -435,14 +438,10 @@ class GitHubBase(GitBase):
         rsp = self.request(
             method='POST',
             url=f"orgs/{owner}/repos",
-            json=args
+            json=args,
+            error_msg=f"Repo {repo}@{owner} cannot be created"
         )
-        if rsp.status_code not in [200, 201, 202]:
-            self.save_error(
-                f"Repo {repo}@{owner} cannot be created: {rsp.text}")
-            return None
-
-        return rsp.json()
+        return rsp
 
     def update_repo(self, owner, repo, **kwargs):
         """Update repository options"""
@@ -450,13 +449,9 @@ class GitHubBase(GitBase):
             method='PATCH',
             url=f'repos/{owner}/{repo}',
             json=kwargs,
+            error_msg=f"Repo {repo}@{owner} cannot be updated"
         )
-        if rsp.status_code not in [200, 201, 202]:
-            self.save_error(
-                f"Repo {repo}@{owner} cannot be updated: {rsp.text}")
-            return None
-
-        return rsp.json()
+        return rsp
 
     def get_repo_topics(self, owner, repo):
         """Get repository topics"""
@@ -468,13 +463,9 @@ class GitHubBase(GitBase):
             method='GET',
             url=f'repos/{owner}/{repo}/topics',
             headers=headers,
+            error_msg=f"Repo {repo}@{owner} topics cannot be updated"
         )
-        if rsp.status_code not in [200, 201, 202]:
-            self.save_error(
-                f"Repo {repo}@{owner} topics cannot be updated: {rsp.text}")
-            return None
-
-        return rsp.json()['names']
+        return rsp['names']
 
     def update_repo_topics(self, owner, repo, topics):
         """Set repository topics"""
@@ -487,13 +478,10 @@ class GitHubBase(GitBase):
             url=f'repos/{owner}/{repo}/topics',
             headers=headers,
             json={'names': topics},
+            error_msg=f"Repo {repo}@{owner} topics cannot be updated"
         )
-        if rsp.status_code not in [200, 201, 202]:
-            self.save_error(
-                f"Repo {repo}@{owner} topics cannot be updated: {rsp.text}")
-            return None
 
-        return rsp.json()
+        return rsp
 
     def get_branch_protection(self, owner, repo, branch):
         """Get branch protection rules"""
@@ -505,14 +493,11 @@ class GitHubBase(GitBase):
             method='GET',
             url=(f'repos/{owner}/{repo}/branches/{branch}/protection'),
             headers=headers,
+            error_msg=f"Repo {repo}@{owner} branch protection "
+                      f"cannot be fetched"
         )
-        if rsp.status_code not in [200, 201, 202, 404]:
-            self.save_error(
-                f"Repo {repo}@{owner} branch protection cannot be fetched"
-                f": {rsp.text}")
-            return None
 
-        return rsp.json()
+        return rsp
 
     def update_branch_protection(self, owner, repo, branch, target):
         """Set branch protection rules"""
@@ -520,17 +505,13 @@ class GitHubBase(GitBase):
             Accept='application/vnd.github.luke-cage-preview+json',
         )
 
-        rsp = self.request(
+        self.request(
             method='PUT',
             url=(f'repos/{owner}/{repo}/branches/{branch}/protection'),
             headers=headers,
-            json=target
+            json=target,
+            error_msg=f"Repo {repo}@{owner} branch protection cannot be updated"
         )
-        if rsp.status_code not in [200, 201, 202]:
-            self.save_error(
-                f"Repo {repo}@{owner} branch protection cannot be updated"
-                f": {rsp.text}")
-            return None
 
         return True
 
@@ -542,13 +523,11 @@ class GitHubBase(GitBase):
         rsp = self.request(
             method='GET',
             url=(f"repos/{owner}/{repo}/teams"),
-            headers=headers
+            headers=headers,
+            error_msg=f"Cannot fetch team {owner}/{repo} teams"
         )
-        if rsp.status_code not in [200]:
-            self.save_error(
-                f"Cannot fetch team {owner}/{repo} teams: {rsp.text}")
 
-        return rsp.json()
+        return rsp
 
     def get_repo_collaborators(self, owner, repo, affiliation='direct'):
         """Get repo collaborators"""
@@ -561,32 +540,35 @@ class GitHubBase(GitBase):
             params={
                 'affiliation': affiliation
             },
-            headers=headers
+            headers=headers,
+            error_msg=f"Cannot fetch team {owner}/{repo} collaborators"
         )
-        if rsp.status_code not in [200]:
-            self.save_error(
-                f"Cannot fetch team {owner}/{repo} collaborators: {rsp.text}")
 
-        return rsp.json()
+        return rsp
 
     def get_members_with_role(self, owner):
         """Fetch current organization members with the role using GraphQL"""
         members = []
         params = {'owner': owner}
+        url = f"{self.gh_url}/graphql"
+
         while True:
             query = self._prepare_graphql_query(
                 QUERY_MEMBERS, params
             )
-            response = self.request(
-                method="POST", url="graphql", json=query
+            (body, response, info) = self._request(
+                method="POST", url=url,
+                data=self.ansible.jsonify(query)
             )
-            errors = response.json().get("errors")
-            if response.status_code >= 400 or errors:
+            status = info['status']
+            data = json.loads(body)
+            errors = data.get("errors")
+            if status >= 400 or errors:
                 if not errors:
                     errors = response.text
                 self.save_error(f"Error performing query: {errors}")
                 break
-            data = response.json()["data"]["organization"]["membersWithRole"]
+            data = data["data"]["organization"]["membersWithRole"]
             for item in data["edges"]:
                 members.append({
                     "login": item["node"]["login"].lower(),
@@ -642,10 +624,11 @@ class GitHubBase(GitBase):
         try:
             current_members = {x['login'].lower(): x for x in
                                self.get_members_with_role(org)}
-        except Exception:
+        except Exception as ex:
             self.fail_json(
                 msg='Cannot fetch current organization members',
-                errors=self.errors)
+                errors=self.errors,
+                ex=str(ex))
 
         # Try to read current invites
         try:
@@ -673,14 +656,13 @@ class GitHubBase(GitBase):
                             check
                         )
                     else:
-                        changed = True
+                        is_changed = True
                         msg = target_role
-                        if not self.ansible.check_mode:
+                        if not check:
                             self.update_org_membership(
                                 org,
                                 login,
                                 target_role,
-                                check
                             )
                 else:
                     # Process member
@@ -723,4 +705,199 @@ class GitHubBase(GitBase):
                     )
                 status[member] = 'Removed'
 
+        return (changed, status)
+
+    def _is_team_update_necessary(self, target, current):
+        if (
+            target.get('description') != current.get('description')
+        ):
+            return True
+        if (
+            target.get('privacy') != current.get('privacy')
+        ):
+            return True
+        return False
+
+    def _manage_org_team(
+        self, owner, name, current, target, exclusive=False, check_mode=True
+    ):
+        changed = False
+        slug = None
+        status = dict()
+        current_team = dict()
+        if not current:
+            # Create new team
+            if not check_mode:
+                current = self.create_team(
+                    owner=owner,
+                    name=name,
+                    description=target.get('description'),
+                    privacy=target.get('privacy'),
+                    parent=target.get('parent'),
+                    maintainers=target.get('maintainer', [])
+                )
+                slug = current_team['slug']
+        else:
+            slug = current['slug']
+
+        if (
+            slug
+            and self._is_team_update_necessary(target, current)
+        ):
+            # Update Team
+            changed = True
+            if not check_mode:
+                current_team = self.update_team(owner, slug, **target)
+
+        status['name'] = current.get('slug', name)
+        for attr in ['description', 'privacy']:
+            status[attr] = current.get(attr)
+
+        if slug:
+            current_members = [
+                {x['login']: x} for x in self.get_team_members(
+                    owner, slug, role='member')
+            ]
+            current_maintainers = [
+                {x['login']: x} for x in self.get_team_members(
+                    owner, slug, role='maintainer')
+            ]
+        else:
+            current_members = []
+            current_maintainers = []
+
+        status['members'] = dict()
+        target_members = target.get('members', []) or []
+        if 'member' in target:
+            target_members = target.get('member', [])
+        for login in target_members:
+            # Member should exist
+            if login not in current_members:
+                changed = True
+                if not check_mode:
+                    self.set_team_member(
+                        owner, slug, login, role='member')
+                status['members'][login] = 'Added'
+            else:
+                status['members'][login] = 'Present'
+                current_members.pop(login, None)
+
+        status['maintainers'] = dict()
+        target_maintainers = target.get('maintainers', []) or []
+        if 'maintainer' in target:
+            target_maintainers = target.get('maintainer', [])
+        for login in target_maintainers:
+            # Maintainer should exist
+            if login not in current_maintainers:
+                changed = True
+                if not check_mode:
+                    self.set_team_member(
+                        owner, slug, login, role='maintainer')
+                status['maintainers'][login] = 'Added'
+            else:
+                status['maintainers'][login] = 'Present'
+                current_maintainers.pop(login, None)
+        # In the exclusive mode drop maintainers and members not present in the
+        # target state
+        if exclusive:
+            for member in current_members + current_maintainers:
+                changed = True
+                if not check_mode:
+                    self.delete_team_member(
+                        owner, slug, member)
+        return (changed, status)
+
+    def _manage_org_teams(self, owner, teams, check_mode):
+        # Get current org teams
+        status = dict()
+        changed = False
+        current_teams = self.get_owner_teams(owner)
+        if current_teams is None:
+            self.fail_json(
+                msg=f'Cannot fetch current teams for {owner}',
+                errors=self.errors)
+
+        # Go over teams required to exist
+        for team, team_dict in teams.items():
+            current_team = None
+            team_slug = None
+            if team not in [x['slug'] for x in current_teams]:
+                changed = True
+                # Create new team
+                if check_mode:
+                    current_team = team
+                else:
+                    current_team = self.create_team(
+                        owner=owner,
+                        name=team,
+                        description=team_dict.get('description'),
+                        privacy=team_dict.get('privacy'),
+                        parent=team_dict.get('parent'),
+                        maintainers=team_dict.get('maintainer', [])
+                    )
+                    team_slug = current_team['slug']
+            else:
+                for t in current_teams:
+                    if t['name'] == team:
+                        current_team = t
+                        team_slug = t['slug']
+                        break
+                if not current_team:
+                    # Not able to cope with wanted team, try others
+                    continue
+
+            status[team] = dict()
+            status[team]['description'] = current_team
+
+            if (
+                team_slug
+                and self._is_team_update_necessary(team_dict, current_team)
+            ):
+                # Update Team
+                changed = True
+                if not check_mode:
+                    self.update_team(owner, team_slug, **team_dict)
+                status[team]['status'] = 'updated'
+
+            if team_slug:
+                current_members = [
+                    x['login'] for x in self.get_team_members(
+                        owner, team_slug, role='member')
+                ]
+            else:
+                current_members = []
+
+            if team_slug:
+                current_maintainers = [
+                    x['login'] for x in self.get_team_members(
+                        owner, team_slug, role='maintainer')
+                ]
+            else:
+                current_maintainers = []
+
+            status[team]['members'] = dict()
+            target_members = team_dict.get('member', []) or []
+            for login in target_members:
+                # Member should exist
+                if login not in current_members:
+                    changed = True
+                    if not check_mode:
+                        self.set_team_member(
+                            owner, team_slug, login, role='member')
+                    status[team]['members'][login] = 'Added'
+                else:
+                    status[team]['members'][login] = 'Present'
+
+            status[team]['maintainers'] = dict()
+            target_maintainers = team_dict.get('maintainer', []) or []
+            for login in target_maintainers:
+                # Maintainer should exist
+                if login not in current_maintainers:
+                    changed = True
+                    if not check_mode:
+                        self.set_team_member(
+                            owner, team_slug, login, role='maintainer')
+                    status[team]['maintainers'][login] = 'Added'
+                else:
+                    status[team]['maintainers'][login] = 'Present'
         return (changed, status)

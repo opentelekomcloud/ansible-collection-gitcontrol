@@ -7,7 +7,7 @@ __metaclass__ = type
 import abc
 
 from ansible.module_utils.basic import AnsibleModule
-
+from ansible.module_utils.urls import fetch_url
 
 def base_argument_spec(**kwargs):
     spec = dict(
@@ -30,6 +30,7 @@ class GitBase:
         self.params = self.ansible.params
         self.module_name = self.ansible._name
         self.results = {'changed': False}
+        self.errors = []
         self.exit = self.exit_json = self.ansible.exit_json
         self.fail = self.fail_json = self.ansible.fail_json
 
@@ -45,8 +46,11 @@ class GitBase:
             if results and isinstance(results, dict):
                 self.ansible.exit_json(**results)
         except Exception as ex:
-            msg = str(ex)
-            self.ansible.fail_json(msg=msg, errors=self.errors)
+            self.ansible.fail_json(
+                msg='Unhandled exception during execution',
+                errors=self.errors,
+                exception=ex
+            )
 
     def save_error(self, msg):
         self.ansible.log(msg)
@@ -58,3 +62,22 @@ class GitBase:
             'variables': variables,
         }
         return data
+
+    def _request(self, method, url, headers=None, **kwargs):
+        if not headers:
+            headers = dict()
+
+        json_data = kwargs.pop('json', '')
+        if json_data:
+            kwargs['data'] = self.ansible.jsonify(json_data)
+
+        response, info = fetch_url(
+            module=self.ansible,
+            headers=headers,
+            method=method, url=url,
+            **kwargs
+        )
+        content = ""
+        if response:
+            content = response.read()
+        return (content, response, info)
