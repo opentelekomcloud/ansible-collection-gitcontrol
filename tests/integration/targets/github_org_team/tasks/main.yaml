@@ -1,0 +1,43 @@
+---
+- module_defaults:
+    opentelekomcloud.gitcontrol.github_org_team:
+      token: "{{ token }}"
+      root: "{{ root }}"
+      organization: "{{ test_org }}"
+      slug: team_d
+      description: Test team
+
+  block:
+    - name: Apply team - check mode
+      opentelekomcloud.gitcontrol.github_org_team:
+      check_mode: true
+
+    - name: Apply teams
+      opentelekomcloud.gitcontrol.github_org_team:
+
+    - name: Apply teams - repeat
+      opentelekomcloud.gitcontrol.github_org_team:
+      register: team
+
+    - name: Checks
+      assert:
+        that: "team is not changed"
+
+    - name: Change team props
+      opentelekomcloud.gitcontrol.github_org_team:
+        description: "new description"
+        privacy: "closed"
+        members:
+          - gtema
+
+    - name: Change team maintainers
+      opentelekomcloud.gitcontrol.github_org_team:
+        exclusive: true
+        maintainers:
+          - gtema
+        members:
+          - gtema
+
+    - name: Delete team
+      opentelekomcloud.gitcontrol.github_org_team:
+        state: absent

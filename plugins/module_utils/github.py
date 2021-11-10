@@ -258,12 +258,12 @@ class GitHubBase(GitBase):
         )
         return rsp
 
-    def delete_team(self, owner, team):
+    def delete_team(self, owner, team_slug):
         """Delete Team"""
         return self.request(
             method='DELETE',
-            url=f"orgs/{owner}/teams/{team}",
-            error_msg=f"Error deleting team {owner}/{team}"
+            url=f"orgs/{owner}/teams/{team_slug}",
+            error_msg=f"Error deleting team {owner}/{team_slug}"
         )
 
     def update_team(
@@ -709,6 +709,10 @@ class GitHubBase(GitBase):
 
     def _is_team_update_necessary(self, target, current):
         if (
+            target.get('name') != current.get('name')
+        ):
+            return True
+        if (
             target.get('description') != current.get('description')
         ):
             return True
@@ -719,52 +723,56 @@ class GitHubBase(GitBase):
         return False
 
     def _manage_org_team(
-        self, owner, name, current, target, exclusive=False, check_mode=True
+        self, owner, slug, current, target, exclusive=False, check_mode=True
     ):
         changed = False
-        slug = None
         status = dict()
-        current_team = dict()
+        is_existing = True
         if not current:
             # Create new team
+            changed = True
             if not check_mode:
                 current = self.create_team(
                     owner=owner,
-                    name=name,
+                    name=slug,
                     description=target.get('description'),
                     privacy=target.get('privacy'),
                     parent=target.get('parent'),
                     maintainers=target.get('maintainer', [])
                 )
-                slug = current_team['slug']
+                slug = current['slug']
+            else:
+                is_existing = False
         else:
             slug = current['slug']
 
+        if not target['name']:
+            target['name'] = slug
         if (
-            slug
+            is_existing
             and self._is_team_update_necessary(target, current)
         ):
             # Update Team
             changed = True
             if not check_mode:
-                current_team = self.update_team(owner, slug, **target)
+                self.update_team(owner, slug, **target)
 
-        status['name'] = current.get('slug', name)
-        for attr in ['description', 'privacy']:
-            status[attr] = current.get(attr)
+        status['slug'] = slug
+        for attr in ['name', 'description', 'privacy']:
+            status[attr] = target.get(attr)
 
-        if slug:
-            current_members = [
-                {x['login']: x} for x in self.get_team_members(
+        if is_existing:
+            current_members = {
+                x['login']: x for x in self.get_team_members(
                     owner, slug, role='member')
-            ]
-            current_maintainers = [
-                {x['login']: x} for x in self.get_team_members(
+            }
+            current_maintainers = {
+                x['login']: x for x in self.get_team_members(
                     owner, slug, role='maintainer')
-            ]
+            }
         else:
-            current_members = []
-            current_maintainers = []
+            current_members = {}
+            current_maintainers = {}
 
         status['members'] = dict()
         target_members = target.get('members', []) or []
@@ -797,107 +805,66 @@ class GitHubBase(GitBase):
             else:
                 status['maintainers'][login] = 'Present'
                 current_maintainers.pop(login, None)
+
         # In the exclusive mode drop maintainers and members not present in the
         # target state
         if exclusive:
-            for member in current_members + current_maintainers:
+            for member, _ in current_members.items():
                 changed = True
                 if not check_mode:
                     self.delete_team_member(
                         owner, slug, member)
+                status['members'][member] = 'removed'
+            for member, _ in current_maintainers.items():
+                changed = True
+                if not check_mode:
+                    self.delete_team_member(
+                        owner, slug, member)
+                status['maintainers'][member] = 'removed'
         return (changed, status)
 
-    def _manage_org_teams(self, owner, teams, check_mode):
+    def _manage_org_teams(self, owner, teams, exclusive=False, check_mode=True):
         # Get current org teams
         status = dict()
         changed = False
         current_teams = self.get_owner_teams(owner)
+        required_team_slugs = []
         if current_teams is None:
             self.fail_json(
                 msg=f'Cannot fetch current teams for {owner}',
                 errors=self.errors)
 
         # Go over teams required to exist
-        for team, team_dict in teams.items():
-            current_team = None
-            team_slug = None
-            if team not in [x['slug'] for x in current_teams]:
+        for team in teams:
+            slug = team.get('slug')
+            required_team_slugs.append(slug)
+            current = None
+            # Find current team
+            for t in current_teams:
+                if t['slug'] == slug:
+                    current = t
+                    break
+
+            (is_changed, status[slug]) = self._manage_org_team(
+                owner,
+                slug,
+                current,
+                team,
+                exclusive,
+                check_mode
+            )
+            if is_changed:
                 changed = True
-                # Create new team
-                if check_mode:
-                    current_team = team
-                else:
-                    current_team = self.create_team(
-                        owner=owner,
-                        name=team,
-                        description=team_dict.get('description'),
-                        privacy=team_dict.get('privacy'),
-                        parent=team_dict.get('parent'),
-                        maintainers=team_dict.get('maintainer', [])
-                    )
-                    team_slug = current_team['slug']
-            else:
-                for t in current_teams:
-                    if t['name'] == team:
-                        current_team = t
-                        team_slug = t['slug']
-                        break
-                if not current_team:
-                    # Not able to cope with wanted team, try others
-                    continue
-
-            status[team] = dict()
-            status[team]['description'] = current_team
-
-            if (
-                team_slug
-                and self._is_team_update_necessary(team_dict, current_team)
-            ):
-                # Update Team
-                changed = True
-                if not check_mode:
-                    self.update_team(owner, team_slug, **team_dict)
-                status[team]['status'] = 'updated'
-
-            if team_slug:
-                current_members = [
-                    x['login'] for x in self.get_team_members(
-                        owner, team_slug, role='member')
-                ]
-            else:
-                current_members = []
-
-            if team_slug:
-                current_maintainers = [
-                    x['login'] for x in self.get_team_members(
-                        owner, team_slug, role='maintainer')
-                ]
-            else:
-                current_maintainers = []
-
-            status[team]['members'] = dict()
-            target_members = team_dict.get('member', []) or []
-            for login in target_members:
-                # Member should exist
-                if login not in current_members:
+        if exclusive:
+            for team in current_teams:
+                slug = team['slug']
+                if slug not in required_team_slugs:
                     changed = True
+                    status[slug] = {'status': 'deleted'}
                     if not check_mode:
-                        self.set_team_member(
-                            owner, team_slug, login, role='member')
-                    status[team]['members'][login] = 'Added'
-                else:
-                    status[team]['members'][login] = 'Present'
+                        self.delete_team(
+                            owner,
+                            slug
+                        )
 
-            status[team]['maintainers'] = dict()
-            target_maintainers = team_dict.get('maintainer', []) or []
-            for login in target_maintainers:
-                # Maintainer should exist
-                if login not in current_maintainers:
-                    changed = True
-                    if not check_mode:
-                        self.set_team_member(
-                            owner, team_slug, login, role='maintainer')
-                    status[team]['maintainers'][login] = 'Added'
-                else:
-                    status[team]['maintainers'][login] = 'Present'
         return (changed, status)

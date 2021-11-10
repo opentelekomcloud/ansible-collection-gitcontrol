@@ -1,0 +1,60 @@
+---
+- module_defaults:
+    opentelekomcloud.gitcontrol.github_org_teams:
+      token: "{{ token }}"
+      root: "{{ root }}"
+      organization: "{{ test_org }}"
+      teams:
+        - slug: team_a
+          description: Test team
+          privacy: closed
+          parent:
+          maintainers:
+            - gtema
+          members:
+            - g2tema
+
+  block:
+    - name: Apply teams - check mode
+      opentelekomcloud.gitcontrol.github_org_teams:
+      check_mode: true
+
+    - name: Apply teams
+      opentelekomcloud.gitcontrol.github_org_teams:
+
+    - name: Apply teams - empty fields
+      opentelekomcloud.gitcontrol.github_org_teams:
+        teams:
+          - slug: team_c
+            description: Test team
+            privacy: closed
+
+    - name: Apply teams - add team maintainers
+      opentelekomcloud.gitcontrol.github_org_teams:
+        teams:
+          - slug: team_c
+            description: Test team
+            privacy: closed
+            maintainers:
+              - gtema
+      register: teams
+
+    - name: Checks
+      assert:
+        that:
+          - "teams.teams.team_c.maintainers.gtema is defined"
+
+    - name: Exclusive mode
+      opentelekomcloud.gitcontrol.github_org_teams:
+        exclusive: true
+        teams:
+          - slug: team_c
+            description: Test team
+            privacy: closed
+      register: teams
+
+    - name: Checks
+      assert:
+        that:
+          - "teams.teams.team_a.status == 'deleted'"
+          - "teams.teams.team_c.maintainers.gtema == 'removed'"

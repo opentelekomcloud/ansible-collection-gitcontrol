@@ -9,6 +9,7 @@ import abc
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.urls import fetch_url
 
+
 def base_argument_spec(**kwargs):
     spec = dict(
     )
