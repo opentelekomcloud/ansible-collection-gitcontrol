@@ -20,8 +20,23 @@ options:
     required: True
   members:
     description: Dictionary of organization members with permissions
-    type: dict
-    required: True
+    type: list
+    required: true
+    elements: dict
+    suboptions:
+      login:
+        description: User login.
+        type: str
+        required: true
+      name:
+        description: Optional user name (for the reference, it is not used)
+        type: str
+        required: false
+      role:
+        description: Member role.
+        type: str
+        chocices: [member, owner]
+        default: member
   exclusive:
     description: |
       Flag specifying whether unmanaged organization members should be removed
@@ -47,7 +62,7 @@ EXAMPLES = '''
     token: "{{ secret }}"
     organization: "test_org"
     members:
-      github_user1:
+      - login: github_user1
         name: "some not required user name"
         role: "member"
 '''
@@ -61,7 +76,17 @@ from ansible_collections.opentelekomcloud.gitcontrol.plugins.module_utils.github
 class GHOrgMembersModule(GitHubBase):
     argument_spec = dict(
         organization=dict(type='str', required=True),
-        members=dict(type='dict', required=True),
+        members=dict(
+            type='list',
+            required=True,
+            elements='dict',
+            options=dict(
+                login=dict(type='str', required=True),
+                name=dict(type='str', required=False),
+                role=dict(type='str', chocices=['owner', 'member'],
+                          default='member', required=False),
+            ),
+        ),
         exclusive=dict(type='bool', default=False)
     )
     module_kwargs = dict(
@@ -74,7 +99,7 @@ class GHOrgMembersModule(GitHubBase):
 
         (changed, status) = self._manage_org_members(
             self.params['organization'],
-            self.params.get('members', {}),
+            self.params['members'],
             self.params['exclusive'],
             self.ansible.check_mode
         )

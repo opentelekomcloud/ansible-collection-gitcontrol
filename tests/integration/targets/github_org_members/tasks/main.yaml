@@ -4,12 +4,10 @@
       token: "{{ token }}"
       organization: "{{ test_org }}"
       members:
-        gtema:
+        - login: gtema
           role: "owner"
-        g2tema:
+        - login: g2tema
           role: "member"
-        otcbot:
-          role: "owner"
 
   block:
     - name: Apply users - check mode
