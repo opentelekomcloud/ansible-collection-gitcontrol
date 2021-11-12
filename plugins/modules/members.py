@@ -49,7 +49,7 @@ class MembersModule(GitHubBase):
         for owner, owner_dict in self.get_members().items():
             (org_changed, status[owner]) = self._manage_org_members(
                 owner,
-                {x['login']: x for x in owner_dict['present'].get('users', [])},
+                owner_dict['present'].get('users', []),
                 False,
                 self.ansible.check_mode
             )

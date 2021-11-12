@@ -640,9 +640,9 @@ class GitHubBase(GitBase):
             current_invites = {}
 
         # Loop through target users
-        for member, member_props in target_members.items():
-            login = member.lower()
-            target_role = member_props.get('role', 'member').lower()
+        for member in target_members:
+            login = member['login'].lower()
+            target_role = member['role'].lower()
             msg = None
             try:
                 if login not in current_members:
