@@ -2,8 +2,10 @@
 - module_defaults:
     opentelekomcloud.gitcontrol.github_org_members:
       token: "{{ token }}"
-      organization: "opentelekomcloud-gitcontrol-test"
+      organization: "{{ test_org }}"
       members:
+        gtema:
+          role: "owner"
         g2tema:
           role: "member"
         otcbot:

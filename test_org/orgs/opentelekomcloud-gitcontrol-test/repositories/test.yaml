@@ -16,7 +16,7 @@ test:
     maintain:
     pull:
     push:
-      - storage
+      - test_b
     admin:
   collaborators:
     maintain:
