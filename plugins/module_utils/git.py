@@ -5,6 +5,7 @@ __metaclass__ = type
 
 
 import abc
+import re
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.urls import fetch_url
@@ -15,6 +16,53 @@ def base_argument_spec(**kwargs):
     )
     spec.update(kwargs)
     return spec
+
+
+def parse_header_links(value):
+    """Return a list of parsed link headers proxies.
+    i.e. Link: <http:/.../front.jpeg>; rel=front; type="image/jpeg",<http://.../back.jpeg>; rel=back;type="image/jpeg"
+    :rtype: list
+    """
+    links = []
+    replace_chars = ' \'"'
+
+    value = value.strip(replace_chars)
+    if not value:
+        return links
+
+    for val in re.split(', *<', value):
+        try:
+            url, params = val.split(';', 1)
+        except ValueError:
+            url, params = val, ''
+
+        link = {'url': url.strip('<> \'"')}
+
+        for param in params.split(';'):
+            try:
+                key, value = param.split('=')
+            except ValueError:
+                break
+
+            link[key.strip(replace_chars)] = value.strip(replace_chars)
+
+        links.append(link)
+
+    return links
+
+
+def get_links(headers):
+    """Returns the parsed header links of the response, if any."""
+
+    header = headers.get('link')
+    res = {}
+
+    if header:
+        for link in parse_header_links(header):
+            key = link.get('rel') or link.get('url')
+            res[key] = link
+
+    return res
 
 
 class GitBase:

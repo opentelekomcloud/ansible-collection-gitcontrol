@@ -15,7 +15,7 @@ except ImportError:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.basic import missing_required_lib
-from ansible_collections.opentelekomcloud.gitcontrol.plugins.module_utils.git import GitBase
+from ansible_collections.opentelekomcloud.gitcontrol.plugins.module_utils.git import (GitBase, get_links)
 
 
 QUERY_MEMBERS = '''
@@ -213,13 +213,15 @@ class GitHubBase(GitBase):
 
         while url:
             content, response, info = self._request(
+                method='GET',
                 url=url,
                 headers=headers,
-                timeout=timeout
+                timeout=timeout,
             )
 
-            url = response.headers.get("next", {}).get("url")
-            for item in json.load(response.read()):
+            url = get_links(response.headers).get("next", {}).get("url")
+
+            for item in json.loads(content):
                 yield item
 
     def get_owner_teams(self, owner):
@@ -556,7 +558,7 @@ class GitHubBase(GitBase):
             query = self._prepare_graphql_query(
                 QUERY_MEMBERS, params
             )
-            (body, response, info) = self._request(
+            body, response, info = self._request(
                 method="POST", url=url,
                 data=self.ansible.jsonify(query)
             )
@@ -588,10 +590,13 @@ class GitHubBase(GitBase):
         current_state = members.pop(login, {})
         if (current_state.get('role', '').lower() != role.lower()):
             changed = True
+            msg = f"role updated to {role.lower()}"
             if not check:
                 self.update_org_membership(
                     owner, login, role)
-        return (changed, role)
+        else:
+            msg = role
+        return (changed, msg)
 
     def _process_invitee(self, owner, login, role, invites, check=True):
         """Process invite for single user"""
@@ -657,7 +662,7 @@ class GitHubBase(GitBase):
                         )
                     else:
                         is_changed = True
-                        msg = target_role
+                        msg = f"invited as {target_role}"
                         if not check:
                             self.update_org_membership(
                                 org,
@@ -728,9 +733,11 @@ class GitHubBase(GitBase):
         changed = False
         status = dict()
         is_existing = True
+        team_status = 'unchanged'
         if not current:
             # Create new team
             changed = True
+            team_status = 'created'
             if not check_mode:
                 current = self.create_team(
                     owner=owner,
@@ -754,10 +761,12 @@ class GitHubBase(GitBase):
         ):
             # Update Team
             changed = True
+            team_status = 'updated'
             if not check_mode:
                 self.update_team(owner, slug, **target)
 
         status['slug'] = slug
+        status['status'] = team_status
         for attr in ['name', 'description', 'privacy']:
             status[attr] = target.get(attr)
 
