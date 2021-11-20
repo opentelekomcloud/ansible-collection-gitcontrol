@@ -1,0 +1,22 @@
+test_branch_protection: &bp
+  required_status_checks:
+    strict: true
+    checks:
+      - context: context_app
+        app_id: 152782
+  enforce_admins: true
+  required_pull_request_reviews:
+    dismissal_restrictions:
+      users: []
+      teams: []
+    dismiss_stale_reviews: true
+    require_code_owner_reviews: true
+    required_approving_review_count: 2
+  restrictions:
+    users: []
+    teams: []
+    apps: ['otc-test-app']
+
+test_branch_protections:
+  - branch: main
+    <<: *bp
