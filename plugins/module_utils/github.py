@@ -40,6 +40,25 @@ query members(
 }
 '''
 
+REPOSITORY_UPDATABLE_ATTRIBUTES = [
+    'allow_auto_merge',
+    'allow_forking',
+    'allow_merge_commit',
+    'allow_rebase_merge',
+    'allow_squash_merge',
+    'archived'
+    'default_branch',
+    'delete_branch_on_merge',
+    'description',
+    'has_issues',
+    'has_projects',
+    'has_wiki',
+    'homepage',
+    'is_template',
+    'private',
+    'visibility'
+]
+
 
 def base_argument_spec(**kwargs):
     spec = dict(
@@ -199,7 +218,7 @@ class GitHubBase(GitBase):
                 error_msg = (
                     f"API returned error on {url}"
                 )
-                self.save_error(f"{error_msg}: {info}")
+            self.save_error(f"{error_msg}: {info}")
         elif status == 404 and ignore_missing:
             return None
         if status == 204:
@@ -299,15 +318,22 @@ class GitHubBase(GitBase):
 
     def get_team_repo_permissions(self, owner, team, repo):
         """Get team permissions on a repo"""
-        headers = dict(
-            Accept='application/vnd.github.v3.repository+json'
-        )
         return self.request(
             method='GET',
             url=(f"orgs/{owner}/"
                  f"teams/{team}/projects/{owner}/{repo}"),
-            headers=headers,
             error_msg=f"Cannot fetch team {team}@{owner}/{repo} permissions"
+        )
+
+    def update_team_repo_permissions2(self, org, team, owner, repo, priv):
+        """Set team permissions on a repo"""
+        self.request(
+            method='PUT',
+            url=(f"orgs/{org}/"
+                 f"teams/{team}/repos/{owner}/{repo}"),
+            json={'permission': priv},
+            error_msg=f"Cannot update team {org}:{team}@{owner}/{repo}"
+                      f" permissions to {priv}"
         )
 
     def update_team_repo_permissions(self, owner, team, repo, priv):
@@ -320,8 +346,6 @@ class GitHubBase(GitBase):
             error_msg=f"Cannot update team {team}@{owner}/{repo} permissions"
         )
 
-        return True
-
     def delete_team_repo_access(self, owner, team, repo):
         """Delete repo access from team"""
         self.request(
@@ -330,8 +354,6 @@ class GitHubBase(GitBase):
                  f"teams/{team}/repos/{owner}/{repo}"),
             error_msg=f"Cannot delete team {team}@{owner}/{repo} access"
         )
-
-        return True
 
     def set_team_member(self, owner, team, login, role='member'):
         """Add user into the team
@@ -447,11 +469,25 @@ class GitHubBase(GitBase):
 
     def update_repo(self, owner, repo, **kwargs):
         """Update repository options"""
+        data = dict()
+        for attr in REPOSITORY_UPDATABLE_ATTRIBUTES:
+            if attr in kwargs:
+                data[attr] = kwargs[attr]
+
         rsp = self.request(
             method='PATCH',
             url=f'repos/{owner}/{repo}',
-            json=kwargs,
+            json=data,
             error_msg=f"Repo {repo}@{owner} cannot be updated"
+        )
+        return rsp
+
+    def delete_repo(self, owner, repo):
+        """Delete repository"""
+        rsp = self.request(
+            method='DELETE',
+            url=f'repos/{owner}/{repo}',
+            error_msg=f"Repo {repo}@{owner} cannot be deleted"
         )
         return rsp
 
@@ -471,14 +507,9 @@ class GitHubBase(GitBase):
 
     def update_repo_topics(self, owner, repo, topics):
         """Set repository topics"""
-        headers = dict(
-            Accept='application/vnd.github.mercy-preview+json'
-        )
-
         rsp = self.request(
             method='PUT',
             url=f'repos/{owner}/{repo}/topics',
-            headers=headers,
             json={'names': topics},
             error_msg=f"Repo {repo}@{owner} topics cannot be updated"
         )
@@ -487,14 +518,9 @@ class GitHubBase(GitBase):
 
     def get_branch_protection(self, owner, repo, branch):
         """Get branch protection rules"""
-        headers = dict(
-            Accept='application/vnd.github.luke-cage-preview+json',
-        )
-
         rsp = self.request(
             method='GET',
             url=(f'repos/{owner}/{repo}/branches/{branch}/protection'),
-            headers=headers,
             error_msg=f"Repo {repo}@{owner} branch protection "
                       f"cannot be fetched"
         )
@@ -503,14 +529,17 @@ class GitHubBase(GitBase):
 
     def update_branch_protection(self, owner, repo, branch, target):
         """Set branch protection rules"""
-        headers = dict(
-            Accept='application/vnd.github.luke-cage-preview+json',
-        )
+        # Checks takes precedence as being more fine granular
+        checks = target.get('required_status_checks', {}).get('checks', '')
+        contexts = target.get('required_status_checks', {}).get('contexts', [])
+        if checks:
+            target['required_status_checks'].pop('contexts', '')
+        elif contexts:
+            target['required_status_checks'].pop('checks', '')
 
         self.request(
             method='PUT',
             url=(f'repos/{owner}/{repo}/branches/{branch}/protection'),
-            headers=headers,
             json=target,
             error_msg=f"Repo {repo}@{owner} branch protection cannot be updated"
         )
@@ -519,13 +548,9 @@ class GitHubBase(GitBase):
 
     def get_repo_teams(self, owner, repo):
         """Get repo teams"""
-        headers = dict(
-            Accept='application/vnd.github.v3+json'
-        )
         rsp = self.request(
             method='GET',
             url=(f"repos/{owner}/{repo}/teams"),
-            headers=headers,
             error_msg=f"Cannot fetch team {owner}/{repo} teams"
         )
 
@@ -533,20 +558,30 @@ class GitHubBase(GitBase):
 
     def get_repo_collaborators(self, owner, repo, affiliation='direct'):
         """Get repo collaborators"""
-        headers = dict(
-            Accept='application/vnd.github.v3+json'
-        )
-        rsp = self.request(
+        return self.request(
             method='GET',
-            url=(f"repos/{owner}/{repo}/collaborators"),
-            params={
-                'affiliation': affiliation
-            },
-            headers=headers,
-            error_msg=f"Cannot fetch team {owner}/{repo} collaborators"
+            url=(f"repos/{owner}/{repo}/collaborators?affiliation={affiliation}"),
+            error_msg=f"Cannot fetch repo {owner}/{repo} collaborators"
         )
 
-        return rsp
+    def delete_repo_collaborator(self, owner, repo, username):
+        """Delete repo collaborator"""
+        self.request(
+            method='DELETE',
+            url=(f"repos/{owner}/{repo}/collaborators/{username}"),
+            error_msg=f"Cannot delete {owner}/{repo} collaborator {username}"
+        )
+
+    def update_repo_collaborator(self, owner, repo, username, permission='pull'):
+        """Add/Update repo collaborator"""
+        return self.request(
+            method='PUT',
+            url=(f"repos/{owner}/{repo}/collaborators/{username}"),
+            json={
+                'permission': permission
+            },
+            error_msg=f"Cannot add repo {owner}/{repo} collaborator"
+        )
 
     def get_members_with_role(self, owner):
         """Fetch current organization members with the role using GraphQL"""
@@ -877,3 +912,246 @@ class GitHubBase(GitBase):
                         )
 
         return (changed, status)
+
+    def _is_repo_update_needed(self, current, target):
+        for attr in REPOSITORY_UPDATABLE_ATTRIBUTES:
+            if attr in target and target[attr] != current.get(attr):
+                return True
+
+    def _is_branch_protection_update_needed(
+        self, owner, repo, branch, target, current=None
+    ):
+        if not current:
+            current = self.get_branch_protection(owner, repo, branch)
+
+        if not current:
+            return True
+        else:
+            for attr in ['allow_deletions', 'allow_force_pushes',
+                         'enforce_admins', 'required_linear_history',
+                         'required_conversation_resolution']:
+                if (
+                    attr in target
+                    and (
+                        attr not in current
+                        or target[attr] != current[attr]['enabled']
+                    )
+                ):
+                    return True
+
+        current_restrictions = current.get('restrictions', {})
+        target_restrictions = target.get('restrictions', {})
+        current_pr_review = current.get('required_pull_request_reviews', {})
+        target_pr_review = target.get('required_pull_request_reviews', {})
+        current_status_checks = current.get('required_status_checks', {})
+        target_status_checks = target.get('required_status_checks', {})
+        if (current_status_checks.get(
+            'strict', False) != target_status_checks.get(
+                'strict', False)):
+            return True
+
+        # rsc.checks:
+        # Only checks or contexts can be present
+        current_checks = current_status_checks.get('checks', []) or []
+        target_checks = target_status_checks.get('checks', []) or []
+        if current_checks or target_checks:
+            if (
+                set(
+                    [f"{x.get('context')}:{x.get('app_id')}" for x in
+                     current_checks]
+                ) != set(
+                    [f"{x.get('context')}:{x.get('app_id')}" for x in
+                     target_checks]
+                )
+            ):
+                return True
+        else:
+            # checks were not present, process contexts
+            current_contexts = current_status_checks.get('contexts', []) or []
+            target_contexts = target_status_checks.get('contexts', []) or []
+            if (
+                set(
+                    current_contexts
+                ) != set(
+                    target_contexts
+                )
+            ):
+                return True
+
+        if target_restrictions:
+            for case in [
+                ('users', 'login'),
+                ('teams', 'slug'),
+                ('apps', 'slug')
+            ]:
+                if (
+                    set(
+                        [x[case[1]] for x in current_restrictions[case[0]]]
+                    ) != set(target_restrictions[case[0]])
+                ):
+                    return True
+
+        if target_pr_review:
+            for attr in ['dismiss_stale_reviews',
+                         'require_code_owner_reviews',
+                         'required_approving_review_count']:
+                if (
+                    attr in target_pr_review
+                    and target_pr_review[attr] != current_pr_review.get(
+                        attr, False)
+                ):
+                    return True
+
+            if 'dismissal_restrictions' in target_pr_review:
+                t = target_pr_review['dismissal_restrictions']
+                c = current_pr_review['dismissal_restrictions']
+                for case in ['users', 'teams']:
+                    if (
+                        set(
+                            [x['login'] for x in c.get(case, [])]
+                        ) != set(t[case])
+                    ):
+                        return True
+
+        return False
+
+    def _manage_repo_teams(
+        self, owner, repo_name, target, check_mode=False
+    ):
+        """Manage repository teams"""
+        changed = False
+        current_teams = {x['slug']: x['permission'] for x in
+                         self.get_repo_teams(owner, repo_name) or []}
+        target_teams = {x['slug']: x['permission'] for x in
+                        target}
+        if (
+            current_teams != target_teams
+        ):
+            changed = True
+            # Short check showed mismatch
+            for team, current_priv in current_teams.items():
+                target_priv = target_teams.pop(team, '')
+                if not target_priv:
+                    if not check_mode:
+                        self.delete_team_repo_access(
+                            owner, team, repo_name)
+                if target_priv != current_priv:
+                    if not check_mode:
+                        self.update_team_repo_permissions2(
+                            owner, team, owner, repo_name, target_priv)
+            # target_teams not contain remainings
+            for team, target_priv in target_teams.items():
+                if not check_mode:
+                    self.update_team_repo_permissions2(
+                        owner, team, owner, repo_name, target_priv)
+
+        return changed
+
+    def _manage_repo_collaborators(
+        self, owner, repo_name, target, check_mode=False
+    ):
+        """Manage repository collaborators"""
+        changed = False
+        target_collaborators = {x['username']: x['permission'] for x in
+                                target}
+        current_collaborators = {x['login']: x['permissions'] for x in
+                                 self.get_repo_collaborators(
+            owner, repo_name)}
+        if target_collaborators != current_collaborators:
+            changed = True
+            # Short comparison showed mismatch
+            for username, permissions in current_collaborators.items():
+                priv = 'pull'
+                if 'push' in permissions and permissions['push']:
+                    priv = 'push'
+                else:
+                    for p in ['pull', 'triage', 'maintain', 'admin']:
+                        if permissions[p]:
+                            priv = p
+                            break
+                target_priv = target_collaborators.pop('username', '')
+                if not target_priv:
+                    # Collaborator should be removed
+                    if not check_mode:
+                        self.delete_repo_collaborator(
+                            owner, repo_name, username)
+                if target_priv != priv:
+                    # Update priv
+                    if not check_mode:
+                        # Update as such is not really working, thus drop and
+                        # create new
+                        self.delete_repo_collaborator(
+                            owner, repo_name, username)
+                        self.update_repo_collaborator(
+                            owner, repo_name, username, target_priv)
+            # target now contains remainings
+            for username, priv in target_collaborators.items():
+                if not check_mode:
+                    self.update_repo_collaborator(
+                        owner, repo_name, username, priv)
+        return changed
+
+    def _manage_repository(self, state, current=None, check_mode=False, **kwargs):
+
+        changed = False
+        owner = kwargs.pop('owner')
+        repo_name = kwargs.pop('name')
+        current_repo = current if current else self.get_repo(owner, repo_name, ignore_missing=True)
+        if not current_repo:
+            changed = True
+            if not check_mode:
+                current_repo = self.create_repo(
+                    owner, repo_name, **kwargs)
+            else:
+                return (changed, kwargs)
+        archive = kwargs.get('archived', False)
+        if (
+            current_repo
+            and archive == current_repo.get('archived')
+        ):
+            # Do nothing for the archived repo
+            pass
+
+        if current_repo and self._is_repo_update_needed(current_repo, kwargs):
+            changed = True
+            if not check_mode:
+                current_repo = self.update_repo(owner, repo_name, **kwargs)
+
+        # Repo topics
+        # TODO(gtema): get rid of this as soon as this becomes part of native
+        # repository API
+        if current_repo and 'topics' in kwargs:
+            current_topics = current_repo['topics']
+            if set(kwargs['topics']) != set(current_topics):
+                changed = True
+                if not check_mode:
+                    self.update_repo_topics(
+                        owner, repo_name, kwargs['topics'])
+                    current_repo['topics'] = kwargs['topics']
+
+        # Branch protections
+        if current_repo:
+            branch_protections = kwargs.pop('branch_protections', [])
+            current_repo['branch_protections'] = []
+            for bp in branch_protections:
+                if (
+                    self._is_branch_protection_update_needed(
+                        owner, repo_name, bp['branch'], bp)
+                ):
+                    changed = True
+                    if not check_mode:
+                        self.update_branch_protection(
+                            owner, repo_name, bp['branch'], bp)
+                current_repo['branch_protections'].append(bp)
+
+        # Teams
+        if current_repo and 'teams' in kwargs:
+            changed = self._manage_repo_teams(
+                owner, repo_name, kwargs['teams'], check_mode)
+
+        # Collaborators
+        if current_repo and 'collaborators' in kwargs:
+            changed = self._manage_repo_collaborators(
+                owner, repo_name, kwargs['collaborators'], check_mode)
+
+        return (changed, current_repo)

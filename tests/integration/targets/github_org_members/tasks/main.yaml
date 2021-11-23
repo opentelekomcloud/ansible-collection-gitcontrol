@@ -5,7 +5,7 @@
       organization: "{{ test_org }}"
       members:
         - login: gtema
-          role: "owner"
+          role: "admin"
         - login: g2tema
           role: "member"
 
