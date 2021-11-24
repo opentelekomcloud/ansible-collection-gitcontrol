@@ -46,7 +46,7 @@ REPOSITORY_UPDATABLE_ATTRIBUTES = [
     'allow_merge_commit',
     'allow_rebase_merge',
     'allow_squash_merge',
-    'archived'
+    'archived',
     'default_branch',
     'delete_branch_on_merge',
     'description',
@@ -218,7 +218,12 @@ class GitHubBase(GitBase):
                 error_msg = (
                     f"API returned error on {url}"
                 )
-            self.save_error(f"{error_msg}: {info}")
+            error_data = dict(url=url)
+            for key in ['url', 'msg', 'status', 'body']:
+                if key in info:
+                    error_data[key] = info[key]
+
+            self.save_error(f"{error_msg}: {error_data}")
         elif status == 404 and ignore_missing:
             return None
         if status == 204:
@@ -471,7 +476,7 @@ class GitHubBase(GitBase):
         """Update repository options"""
         data = dict()
         for attr in REPOSITORY_UPDATABLE_ATTRIBUTES:
-            if attr in kwargs:
+            if attr in kwargs and kwargs[attr] is not None:
                 data[attr] = kwargs[attr]
 
         rsp = self.request(
@@ -1024,9 +1029,7 @@ class GitHubBase(GitBase):
                          self.get_repo_teams(owner, repo_name) or []}
         target_teams = {x['slug']: x['permission'] for x in
                         target}
-        if (
-            current_teams != target_teams
-        ):
+        if current_teams != target_teams:
             changed = True
             # Short check showed mismatch
             for team, current_priv in current_teams.items():
@@ -1052,11 +1055,11 @@ class GitHubBase(GitBase):
     ):
         """Manage repository collaborators"""
         changed = False
-        target_collaborators = {x['username']: x['permission'] for x in
-                                target}
         current_collaborators = {x['login']: x['permissions'] for x in
                                  self.get_repo_collaborators(
-            owner, repo_name)}
+                                     owner, repo_name) or []}
+        target_collaborators = {x['username']: x['permission'] for x in
+                                target}
         if target_collaborators != current_collaborators:
             changed = True
             # Short comparison showed mismatch
@@ -1069,12 +1072,14 @@ class GitHubBase(GitBase):
                         if permissions[p]:
                             priv = p
                             break
-                target_priv = target_collaborators.pop('username', '')
+                target_priv = target_collaborators.pop('username', None)
                 if not target_priv:
                     # Collaborator should be removed
                     if not check_mode:
+                        self.save_error('removing coll')
                         self.delete_repo_collaborator(
                             owner, repo_name, username)
+                    continue
                 if target_priv != priv:
                     # Update priv
                     if not check_mode:
@@ -1104,13 +1109,13 @@ class GitHubBase(GitBase):
                     owner, repo_name, **kwargs)
             else:
                 return (changed, kwargs)
-        archive = kwargs.get('archived', False)
+        archive = kwargs.pop('archived', False)
         if (
             current_repo
-            and archive == current_repo.get('archived')
+            and archive and current_repo.get('archived')
         ):
             # Do nothing for the archived repo
-            pass
+            return (changed, current_repo)
 
         if current_repo and self._is_repo_update_needed(current_repo, kwargs):
             changed = True
@@ -1130,8 +1135,8 @@ class GitHubBase(GitBase):
                     current_repo['topics'] = kwargs['topics']
 
         # Branch protections
-        if current_repo:
-            branch_protections = kwargs.pop('branch_protections', [])
+        branch_protections = kwargs.pop('branch_protections', [])
+        if current_repo and branch_protections is not None:
             current_repo['branch_protections'] = []
             for bp in branch_protections:
                 if (
@@ -1145,13 +1150,38 @@ class GitHubBase(GitBase):
                 current_repo['branch_protections'].append(bp)
 
         # Teams
-        if current_repo and 'teams' in kwargs:
+        target_teams = kwargs.get('teams')
+        if (
+            current_repo and target_teams is not None
+        ):
             changed = self._manage_repo_teams(
-                owner, repo_name, kwargs['teams'], check_mode)
+                owner, repo_name, target_teams, check_mode)
 
         # Collaborators
-        if current_repo and 'collaborators' in kwargs:
+        target_collaborators = kwargs.get('collaborators')
+        if (
+            current_repo and target_collaborators is not None
+        ):
             changed = self._manage_repo_collaborators(
-                owner, repo_name, kwargs['collaborators'], check_mode)
+                owner, repo_name, target_collaborators, check_mode)
+
+        # If we need to archive - do this after updating everything else
+        if (
+            current_repo
+            and archive and not current_repo.get('archived')
+        ):
+            changed = True
+            if not check_mode:
+                current_repo = self.update_repo(
+                    owner, repo_name, archived=True)
+
+        if current_repo:
+            # Get rid of all those XXX_url properties
+            for k in list(current_repo.keys()):
+                if k.endswith('_url'):
+                    current_repo.pop(k)
+            current_repo['organization'] = dict(
+                login=current_repo['organization']['login']
+            )
 
         return (changed, current_repo)

@@ -96,8 +96,11 @@ options:
   allow_forking:
     description: |
       Either true to allow private forks, or false to prevent private forks.
+      Please note that setting this attribute requires organization to overall
+      allow forking of private repositories, otherwise GitHub refuses setting
+      this variable to any value.
     type: bool
-    default: false
+    default: None
   allow_merge_commit:
     description: |
       Either true to allow merging pull requests with a merge commit, or false
@@ -360,23 +363,23 @@ class GHOrgRepositoryModule(GitHubBase):
         has_issues=dict(type='bool', default=True),
         has_projects=dict(type='bool', default=True),
         has_wiki=dict(type='bool', default=True),
-        is_template=dict(type='bool', default=True),
+        is_template=dict(type='bool', default=False),
         auto_init=dict(type='bool', default=False),
         gitignore_template=dict(type='str'),
         license_template=dict(type='str'),
-        allow_forking=dict(type='bool', default=True),
+        allow_forking=dict(type='bool', default=None),
         allow_squash_merge=dict(type='bool', default=True),
         allow_merge_commit=dict(type='bool', default=True),
         allow_rebase_merge=dict(type='bool', default=True),
         allow_auto_merge=dict(type='bool', default=False),
         delete_branch_on_merge=dict(type='bool', default=False),
         default_branch=dict(type='str'),
-        archived=dict(type='str', default=False),
+        archived=dict(type='bool', default=False),
         topics=dict(type='list', elements='str', default=[]),
         branch_protections=dict(
             type='list', required=False, elements='dict', options=dict(
                 allow_deletions=dict(type='bool', default=False),
-                allow_force_pushed=dict(type='bool', default=False),
+                allow_force_pushes=dict(type='bool', default=False),
                 branch=dict(type='str', required=True),
                 enforce_admins=dict(type='bool', default=False),
                 required_conversation_resolution=dict(type='bool',

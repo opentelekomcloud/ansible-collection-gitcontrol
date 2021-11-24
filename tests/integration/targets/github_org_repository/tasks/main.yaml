@@ -64,6 +64,33 @@
             permission: pull
         branch_protections: "{{ test_branch_protections }}"
 
+    - name: Apply - another iteration
+      opentelekomcloud.gitcontrol.github_org_repository:
+        name: test2
+        description: "Test description"
+        homepage: "https://test.com"
+        archived: false
+        has_issues: false
+        has_projects: false
+        has_wiki: false
+        visibility: public
+        is_template: false
+        auto_init: true
+        gitignore_template: "Python"
+        license_template: "mit"
+        allow_squash_merge: true
+        allow_merge_commit: true
+        allow_rebase_merge: true
+        allow_auto_merge: true
+        delete_branch_on_merge: true
+        default_branch: main
+        topics: ['a', 'b']
+        teams:
+          - slug: team_c
+            permission: push
+        collaborators: []
+        branch_protections: "{{ test_branch_protections }}"
+
     - name: Drop repository
       opentelekomcloud.gitcontrol.github_org_repository:
         name: test2
