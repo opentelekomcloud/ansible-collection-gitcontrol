@@ -1076,7 +1076,6 @@ class GitHubBase(GitBase):
                 if not target_priv:
                     # Collaborator should be removed
                     if not check_mode:
-                        self.save_error('removing coll')
                         self.delete_repo_collaborator(
                             owner, repo_name, username)
                     continue
@@ -1180,8 +1179,14 @@ class GitHubBase(GitBase):
             for k in list(current_repo.keys()):
                 if k.endswith('_url'):
                     current_repo.pop(k)
+            org = current_repo.pop('organization', None)
             current_repo['organization'] = dict(
-                login=current_repo['organization']['login']
+                login=org.get('login')
             )
+            owner = current_repo.pop('owner', None)
+            if owner:
+                current_repo['owner'] = dict(
+                    login=owner.get('login')
+                )
 
         return (changed, current_repo)
