@@ -1038,6 +1038,7 @@ class GitHubBase(GitBase):
                     if not check_mode:
                         self.delete_team_repo_access(
                             owner, team, repo_name)
+                    continue
                 if target_priv != current_priv:
                     if not check_mode:
                         self.update_team_repo_permissions2(
