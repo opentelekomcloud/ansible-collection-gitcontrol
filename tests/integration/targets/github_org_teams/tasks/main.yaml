@@ -40,7 +40,7 @@
       register: teams
 
     - name: Checks
-      assert:
+      ansible.builtin.assert:
         that:
           - "teams.teams.team_c.maintainers.gtema is defined"
 
@@ -54,7 +54,7 @@
       register: teams
 
     - name: Checks
-      assert:
+      ansible.builtin.assert:
         that:
           - "teams.teams.team_a.status == 'deleted'"
           - "teams.teams.team_c.maintainers.gtema == 'removed'"

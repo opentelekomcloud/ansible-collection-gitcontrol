@@ -20,7 +20,7 @@
       register: team
 
     - name: Checks
-      assert:
+      ansible.builtin.assert:
         that: "team is not changed"
 
     - name: Change team props
