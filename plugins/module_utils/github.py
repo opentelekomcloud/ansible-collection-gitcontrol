@@ -989,6 +989,8 @@ class GitHubBase(GitBase):
                 ('teams', 'slug'),
                 ('apps', 'slug')
             ]:
+                if not current_restrictions or case[0] not in current_restrictions:
+                    return True
                 if (
                     set(
                         [x[case[1]] for x in current_restrictions[case[0]]]
