@@ -1,2 +1,2 @@
 otcdocstheme # Ansible-2.0
-Sphinx<3.0 # BSD
+Sphinx # BSD
