@@ -25,7 +25,7 @@ options:
   state:
     description: Repository state
     type: str
-    chocies: [present, absent]
+    choices: [present, absent]
     default: present
   description:
     description: Repository description
@@ -151,14 +151,13 @@ options:
     type: list
     elements: dict
     options:
-      username:
-        description: Username
+      slug:
+        description: Team slug
         type: str
         required: true
       permission:
         description: |
-          The permission to grant the collaborator. Only valid on
-          organization-owned repositories. Can be one of:
+          The permission to grant to the team for this project. Can be one of:
 
           * pull - can pull, but not push to or administer this repository.
           * push - can pull and push, but not administer this repository.
@@ -169,35 +168,39 @@ options:
           manage issues and pull requests without write access.
         type: str
         choices: [pull, push, admin, maintain, triage]
-        default: pull
+        default: push
   collaborators:
     description: |
       Repository collaborators with their permissions
     type: list
     elements: dict
     options:
-      slug:
-        description: Team slug
+      username:
+        description: Username
         type: str
         required: true
       permission:
         description: |
-          The permission to grant to the team for this project. Can be one of:
+          The permission to grant the collaborator. Only valid on
+          organization-owned repositories. Can be one of:
 
-              * read - team members can read, but not write to or administer
-              this project.
-              * write - team members can read and write, but not administer
-              this project.
-              * admin - team members can read, write and administer this
-              project.
+          * pull - can pull, but not push to or administer this
+          repository.
+          * push - can pull and push, but not administer this repository.
+          * admin - can pull, push and administer this repository.
+          * maintain - Recommended for project managers who need
+          to manage the repository without access to sensitive or
+          destructive actions.
+          * triage - Recommended for contributors who need to proactively
+          manage issues and pull requests without write access.
         type: str
-        choices: [read, write, admin]
-        default: read
+        choices: [pull, push, admin, maintain, triage]
+        default: push
   branch_protection:
     description: |
       Branch protection definitions.
     type: list
-    elemetns: dict
+    elements: dict
     suboptions:
       branch:
         description: Branch name to protect.
@@ -233,7 +236,7 @@ options:
                 description: |
                   The name of the required check.
                 type: str
-              appid:
+              app_id:
                 description: |
                   The ID of the GitHub App that must provide this check. Set to
                   null to accept the check from any source.
@@ -286,7 +289,8 @@ options:
             type: int
         restrictions:
           description: |
-            Restrict who can push to the protected branch. User, app, and team restrictions are only available for organization-owned repositories.
+            Restrict who can push to the protected branch. User, app,
+            and team restrictions are only available for organization-owned repositories.
           type: dict
           default: null
           suboptions:
@@ -428,8 +432,8 @@ class GHOrgRepositoryModule(GitHubBase):
             type='list', elements='dict', options=dict(
                 slug=dict(type='str', required=True),
                 permission=dict(
-                    type='str', default='read',
-                    chocices=['pull', 'triage', 'push', 'maintain', 'admin']
+                    type='str', default='push',
+                    choices=['pull', 'push', 'admin', 'maintain', 'triage']
                 )
             )
         ),
@@ -437,8 +441,8 @@ class GHOrgRepositoryModule(GitHubBase):
             type='list', elements='dict', options=dict(
                 username=dict(type='str', required=True),
                 permission=dict(
-                    type='str', default='pull',
-                    chocices=['pull', 'push', 'admin', 'maintain', 'triage']
+                    type='str', default='push',
+                    choices=['pull', 'push', 'admin', 'maintain', 'triage']
                 )
             )
         ),

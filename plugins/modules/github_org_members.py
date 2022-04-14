@@ -35,7 +35,7 @@ options:
       role:
         description: Member role.
         type: str
-        chocices: [member, admin]
+        choices: [member, admin]
         default: member
   exclusive:
     description: |
@@ -83,7 +83,7 @@ class GHOrgMembersModule(GitHubBase):
             options=dict(
                 login=dict(type='str', required=True),
                 name=dict(type='str', required=False),
-                role=dict(type='str', chocices=['owner', 'admin'],
+                role=dict(type='str', choices=['owner', 'admin'],
                           default='member', required=False),
             ),
         ),

@@ -22,7 +22,7 @@ options:
   state:
     description: Team state
     type: str
-    chocices: [present, absent]
+    choices: [present, absent]
     default: present
   slug:
     description: Team slug.
@@ -98,7 +98,7 @@ from ansible_collections.opentelekomcloud.gitcontrol.plugins.module_utils.github
 class GHOrgTeamModule(GitHubBase):
     argument_spec = dict(
         organization=dict(type='str', required=True),
-        state=dict(type='str', chocices=['present', 'absent'],
+        state=dict(type='str', choices=['present', 'absent'],
                    default='present'),
         slug=dict(type='str', required=True),
         name=dict(type='str', required=False),
