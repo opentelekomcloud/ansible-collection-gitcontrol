@@ -287,30 +287,30 @@ options:
               Specify the number of reviewers required to approve pull
               requests. Use a number between 1 and 6.
             type: int
-        restrictions:
-          description: |
-            Restrict who can push to the protected branch. User, app,
-            and team restrictions are only available for organization-owned repositories.
-          type: dict
-          default: null
-          suboptions:
-            users:
-              description: |
-                The list of user logins with push access.
-              type: list
-              elements: str
-              default: []
-            teams:
-              desctiption: |
-                The list of team slugs with push access.
-              type: list
-              elements: str
-              default: []
-            apps:
-              description: |
-                The list of app slugs with push access.
-              type: list
-              elements: str
+      restrictions:
+        description: |
+          Restrict who can push to the protected branch. User, app,
+          and team restrictions are only available for organization-owned repositories.
+        type: dict
+        default: null
+        suboptions:
+          users:
+            description: |
+              The list of user logins with push access.
+            type: list
+            elements: str
+            default: []
+          teams:
+            desctiption: |
+              The list of team slugs with push access.
+            type: list
+            elements: str
+            default: []
+          apps:
+            description: |
+              The list of app slugs with push access.
+            type: list
+            elements: str
       required_linear_history:
         description: |
           Enforces a linear commit Git history, which prevents anyone from
