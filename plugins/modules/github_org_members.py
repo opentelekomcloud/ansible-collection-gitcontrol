@@ -14,6 +14,9 @@ author: "Artem Goncharov (@gtema)"
 description:
   - Manages organization members inside of the organization repository
 options:
+  root:
+    type: str
+    required: False
   organization:
     description: Name of the GitHub organization
     type: str
@@ -21,17 +24,17 @@ options:
   members:
     description: Dictionary of organization members with permissions
     type: list
-    required: true
+    required: True
     elements: dict
     suboptions:
       login:
         description: User login.
         type: str
-        required: true
+        required: True
       name:
         description: Optional user name (for the reference, it is not used)
         type: str
-        required: false
+        required: False
       role:
         description: Member role.
         type: str
@@ -42,8 +45,8 @@ options:
       Flag specifying whether unmanaged organization members should be removed
       or not.
     type: bool
-    default: false
-    required: false
+    default: False
+    required: False
 '''
 
 

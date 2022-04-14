@@ -21,7 +21,7 @@ options:
   name:
     description: Repository name
     type: str
-    required: true
+    required: True
   state:
     description: Repository state
     type: str
@@ -30,15 +30,15 @@ options:
   description:
     description: Repository description
     type: str
-    required: false
+    required: False
   homepage:
     description: Repository homepage link
     type: str
-    required: false
+    required: False
   private:
     description: Whether the repository is private.
     type: bool
-    default: false
+    default: False
   visibility:
     description: |
       Can be public or private. If your organization is associated with an
@@ -50,7 +50,7 @@ options:
   has_issues:
     description: Either true to enable issues for this repository or false to disable them.
     type: bool
-    default: true
+    default: True
   has_projects:
     description: |
       Either true to enable projects for this repository or false to disable
@@ -58,29 +58,29 @@ options:
       disabled repository projects, the default is false, and if you pass true,
       the API returns an error.
     type: bool
-    default: true
+    default: True
   has_wiki:
     description: |
       Either true to enable the wiki for this repository or false to disable it.
     type: bool
-    default: true
+    default: True
   is_template:
     description: |
       Either true to make this repo available as a template repository or false
       to prevent it.
     type: bool
-    default: false
+    default: False
   auto_init:
     description: |
       Pass true to create an initial commit with empty README.
     type: bool
-    default: false
+    default: False
   gitignore_template:
     description: |
       Desired language or platform .gitignore template to apply. Use the name
       of the template without the extension. For example, "Haskell".
     type: str
-    required: false
+    required: False
   license_template:
     description: |
       Choose an open source license template that best suits your needs, and
@@ -92,7 +92,7 @@ options:
       Either true to allow squash-merging pull requests, or false to prevent
       squash-merging.
     type: bool
-    default: true
+    default: True
   allow_forking:
     description: |
       Either true to allow private forks, or false to prevent private forks.
@@ -106,25 +106,25 @@ options:
       Either true to allow merging pull requests with a merge commit, or false
       to prevent merging pull requests with merge commits.
     type: bool
-    default: true
+    default: True
   allow_rebase_merge:
     description: |
       Either true to allow rebase-merging pull requests, or false to prevent
       rebase-merging.
     type: bool
-    default: true
+    default: True
   allow_auto_merge:
     description: |
       Either true to allow auto-merge on pull requests, or false to disallow
       auto-merge.
     type: bool
-    default: false
+    default: False
   delete_branch_on_merge:
     description: |
       Either true to allow automatically deleting head branches when pull
       requests are merged, or false to prevent automatic deletion.
     type: bool
-    default: false
+    default: False
   default_branch:
     description: |
       Default branch name for the repository.
@@ -134,7 +134,7 @@ options:
       true to archive this repository. Note: You cannot unarchive repositories
       through the API.
     type: bool
-    default: true
+    default: False
   topics:
     description: |
       An array of topics to add to the repository.
@@ -149,7 +149,7 @@ options:
       slug:
         description: Team slug
         type: str
-        required: true
+        required: True
       permission:
         description: |
           The permission to grant to the team for this project. Can be one of:
@@ -173,7 +173,7 @@ options:
       username:
         description: Username
         type: str
-        required: true
+        required: True
       permission:
         description: |
           The permission to grant the collaborator. Only valid on
@@ -200,16 +200,16 @@ options:
       branch:
         description: Branch name to protect.
         type: str
-        required: true
+        required: True
       required_status_checks:
         description: Require status checks to pass before merging.
         type: dict
-        required: true
+        required: True
         suboptions:
           strict:
             description: Require branches to be up to date before merging.
             type: bool
-            default: false
+            default: False
           contexts:
             description: |
               The list of status checks to require in order to merge into this
@@ -242,7 +242,7 @@ options:
           to true to enforce required status checks for repository
           administrators.
         type: bool
-        default: false
+        default: False
       required_pull_request_reviews:
         description: |
           Require at least one approving review on a pull request,
@@ -271,17 +271,18 @@ options:
               Set to true if you want to automatically dismiss approving
               reviews when someone pushes a new commit.
             type: bool
-            default: true
+            default: True
           require_code_owner_reviews:
             description: |
               Blocks merging pull requests until code owners review them.
             type: bool
-            default: true
+            default: True
           required_approving_review_count:
             description: |
               Specify the number of reviewers required to approve pull
               requests. Use a number between 1 and 6.
             type: int
+            choices: [1, 2, 3, 4, 5]
       restrictions:
         description: |
           Restrict who can push to the protected branch. User, app,
@@ -312,25 +313,25 @@ options:
           pushing merge commits to a branch. Set to true to enforce a linear
           commit history.
         type: bool
-        default: false
+        default: False
       allow_force_pushes:
         description: |
           Permits force pushes to the protected branch by anyone with write
           access to the repository. Set to true to allow force pushes.
         type: bool
-        default: false
+        default: False
       allow_deletions:
         description: |
           Allows deletion of the protected branch by anyone with write access
           to the repository.
         type: bool
-        default: false
+        default: False
       required_conversation_resolution:
         description: |
           Requires all conversations on code to be resolved before a pull
           request can be merged into a branch that matches this rule.
         type: bool
-        default: false
+        default: False
 
 '''
 

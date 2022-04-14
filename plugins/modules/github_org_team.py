@@ -27,7 +27,7 @@ options:
   slug:
     description: Team slug.
     type: str
-    required: true
+    required: True
   name:
     description: Team name.
     type: str
@@ -66,7 +66,7 @@ options:
   exclusive:
     description: Whether only listed members and maintainers should be present.
     type: bool
-    default: false
+    default: False
 '''
 
 
