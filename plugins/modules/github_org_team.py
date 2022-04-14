@@ -15,6 +15,10 @@ author: "Artem Goncharov (@gtema)"
 description:
   - Manages organization teams.
 options:
+  root:
+    description: Checkout directory
+    type: str
+    required: False
   organization:
     description: Name of the GitHub organization
     type: str
@@ -57,8 +61,7 @@ options:
     required: False
     default: []
   members:
-    description: List GitHub IDs for organization members who will become team
-    members.
+    description: List GitHub IDs for organization members who will become team members.
     type: list
     elements: str
     required: False

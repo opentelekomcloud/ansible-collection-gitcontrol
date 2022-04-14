@@ -15,6 +15,7 @@ description:
   - Manages organization members inside of the organization repository
 options:
   root:
+    description: Checkout directory
     type: str
     required: False
   organization:

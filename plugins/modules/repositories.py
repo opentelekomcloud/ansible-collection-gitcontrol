@@ -15,6 +15,7 @@ description:
   - Manages repository options
 options:
   root:
+    description: Checkout directory
     type: str
     required: False
   token:

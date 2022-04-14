@@ -14,6 +14,10 @@ author: "Artem Goncharov (@gtema)"
 description:
   - Manages organization repositories inside of the organization repository
 options:
+  root:
+    description: Checkout directory
+    type: str
+    required: False
   owner:
     description: Name of the GitHub organization
     type: str
