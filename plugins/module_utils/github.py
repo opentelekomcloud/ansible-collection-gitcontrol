@@ -1011,7 +1011,10 @@ class GitHubBase(GitBase):
 
             if 'dismissal_restrictions' in target_pr_review:
                 t = target_pr_review['dismissal_restrictions']
-                c = current_pr_review['dismissal_restrictions']
+
+                if 'dismissal_restrictions' not in current_pr_review:
+                    return True
+
                 for case in ['users', 'teams']:
                     if (
                         set(
