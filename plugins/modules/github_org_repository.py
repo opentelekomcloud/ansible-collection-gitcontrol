@@ -168,7 +168,7 @@ options:
           manage issues and pull requests without write access.
         type: str
         choices: [pull, push, admin, maintain, triage]
-        default: push
+        default: pull
   collaborators:
     description: |
       Repository collaborators with their permissions
@@ -195,7 +195,7 @@ options:
           manage issues and pull requests without write access.
         type: str
         choices: [pull, push, admin, maintain, triage]
-        default: push
+        default: pull
   branch_protection:
     description: |
       Branch protection definitions.
@@ -432,7 +432,7 @@ class GHOrgRepositoryModule(GitHubBase):
             type='list', elements='dict', options=dict(
                 slug=dict(type='str', required=True),
                 permission=dict(
-                    type='str', default='push',
+                    type='str', default='pull',
                     choices=['pull', 'push', 'admin', 'maintain', 'triage']
                 )
             )
@@ -441,7 +441,7 @@ class GHOrgRepositoryModule(GitHubBase):
             type='list', elements='dict', options=dict(
                 username=dict(type='str', required=True),
                 permission=dict(
-                    type='str', default='push',
+                    type='str', default='pull',
                     choices=['pull', 'push', 'admin', 'maintain', 'triage']
                 )
             )
