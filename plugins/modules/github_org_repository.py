@@ -104,7 +104,7 @@ options:
       allow forking of private repositories, otherwise GitHub refuses setting
       this variable to any value.
     type: bool
-    default: None
+    default: False
   allow_merge_commit:
     description: |
       Either true to allow merging pull requests with a merge commit, or false
@@ -157,6 +157,7 @@ options:
       permission:
         description: |
           The permission to grant to the team for this project. Can be one of:
+
           * pull - can pull, but not push to or administer this repository.
           * push - can pull and push, but not administer this repository.
           * admin - can pull, push and administer this repository.
@@ -180,6 +181,7 @@ options:
       permission:
         description: |
           The permission to grant the collaborator. Only valid on
+
           organization-owned repositories. Can be one of:
           * pull - can pull, but not push to or administer this
           repository.
@@ -368,7 +370,7 @@ class GHOrgRepositoryModule(GitHubBase):
         auto_init=dict(type='bool', default=False),
         gitignore_template=dict(type='str'),
         license_template=dict(type='str'),
-        allow_forking=dict(type='bool', default=None),
+        allow_forking=dict(type='bool', default=False),
         allow_squash_merge=dict(type='bool', default=True),
         allow_merge_commit=dict(type='bool', default=True),
         allow_rebase_merge=dict(type='bool', default=True),
