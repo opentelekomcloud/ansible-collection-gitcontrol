@@ -157,7 +157,6 @@ options:
       permission:
         description: |
           The permission to grant to the team for this project. Can be one of:
-
           * pull - can pull, but not push to or administer this repository.
           * push - can pull and push, but not administer this repository.
           * admin - can pull, push and administer this repository.
@@ -182,7 +181,6 @@ options:
         description: |
           The permission to grant the collaborator. Only valid on
           organization-owned repositories. Can be one of:
-
           * pull - can pull, but not push to or administer this
           repository.
           * push - can pull and push, but not administer this repository.
@@ -336,7 +334,6 @@ options:
           request can be merged into a branch that matches this rule.
         type: bool
         default: False
-
 '''
 
 
