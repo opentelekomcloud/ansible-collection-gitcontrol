@@ -65,7 +65,7 @@ opentelekomcloud.gitcontrol.github_org_teams:
   description: List of organization teams statuses
   returned: always
   type: list
-  list_item: string
+  elements: str
 '''
 
 

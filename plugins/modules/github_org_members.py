@@ -52,7 +52,7 @@ members:
   description: List of organization member statuses
   returned: always
   type: list
-  list_item: string
+  elements: str
 '''
 
 

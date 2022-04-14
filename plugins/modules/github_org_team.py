@@ -53,14 +53,14 @@ options:
   maintainers:
     description: List GitHub IDs for organization members who will become team maintainers.
     type: list
-    elements: string
+    elements: str
     required: False
     default: []
   members:
     description: List GitHub IDs for organization members who will become team
     members.
     type: list
-    elements: string
+    elements: str
     required: False
     default: []
   exclusive:
@@ -75,7 +75,7 @@ opentelekomcloud.gitcontrol.github_org_team:
   description: List of organization teams statuses
   returned: always
   type: list
-  list_item: string
+  elements: str
 '''
 
 
