@@ -33,6 +33,10 @@ options:
         description: Team slug
         type: str
         required: True
+      name:
+        description: Team name
+        type: str
+        required: False
       description:
         description: Team description
         type: str
@@ -49,11 +53,15 @@ options:
       maintainers:
         description: List of team maintainers
         type: list
+        elements: str
         required: False
+        aliases: [maintainer]
       members:
         description: List of team members
         type: list
+        elements: str
         required: False
+        aliases: [member]
   exclusive:
     description: |
       Whether exclusive mode should be enabled. This enforces that not

@@ -193,7 +193,7 @@ options:
         type: str
         choices: [pull, push, admin, maintain, triage]
         default: pull
-  branch_protection:
+  branch_protections:
     description: |
       Branch protection definitions.
     type: list
