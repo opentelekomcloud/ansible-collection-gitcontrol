@@ -28,11 +28,11 @@ options:
       slug:
         description: Team slug
         type: str
-        required: true
+        required: True
       description:
         description: Team description
         type: str
-        required: false
+        required: False
       privacy:
         description: Team privacy option
         type: str
@@ -41,22 +41,22 @@ options:
       parent:
         description: Slug of the parent team
         type: str
-        required: false
+        required: False
       maintainers:
         description: List of team maintainers
         type: list
-        required: false
+        required: False
       members:
         description: List of team members
         type: list
-        required: false
+        required: False
   exclusive:
     description: |
       Whether exclusive mode should be enabled. This enforces that not
       configured, but existing teams as well as team maintainers and members
       will be deleted.
     type: bool
-    default: false
+    default: False
 '''
 
 
@@ -81,8 +81,6 @@ EXAMPLES = '''
             - userA
         member:
             - userB
-        parent:
-        visibility
 '''
 
 

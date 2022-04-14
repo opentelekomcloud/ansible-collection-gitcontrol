@@ -135,11 +135,6 @@ options:
       through the API.
     type: bool
     default: true
-  allow_forking:
-    description: |
-      Either true to allow private forks, or false to prevent private forks.
-    type: bool
-    default: true
   topics:
     description: |
       An array of topics to add to the repository.

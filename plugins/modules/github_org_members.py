@@ -83,7 +83,7 @@ class GHOrgMembersModule(GitHubBase):
             options=dict(
                 login=dict(type='str', required=True),
                 name=dict(type='str', required=False),
-                role=dict(type='str', choices=['owner', 'admin'],
+                role=dict(type='str', choices=['member', 'admin'],
                           default='member', required=False),
             ),
         ),

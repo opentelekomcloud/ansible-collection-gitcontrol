@@ -15,6 +15,9 @@ description:
   - Manages repository options
 options:
   root:
+    type: str
+    required: False
+  token:
     description: GitHub token
     type: str
     required: True
