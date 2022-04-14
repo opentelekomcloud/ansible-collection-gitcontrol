@@ -149,7 +149,7 @@ options:
       Repository teams with their permissions
     type: list
     elements: dict
-    options:
+    suboptions:
       slug:
         description: Team slug
         type: str
@@ -172,7 +172,7 @@ options:
       Repository collaborators with their permissions
     type: list
     elements: dict
-    options:
+    suboptions:
       username:
         description: Username
         type: str
@@ -299,7 +299,7 @@ options:
             elements: str
             default: []
           teams:
-            desctiption: |
+            description: |
               The list of team slugs with push access.
             type: list
             elements: str
@@ -443,7 +443,6 @@ class GHOrgRepositoryModule(GitHubBase):
                 )
             )
         ),
-
     )
     module_kwargs = dict(
         supports_check_mode=True
