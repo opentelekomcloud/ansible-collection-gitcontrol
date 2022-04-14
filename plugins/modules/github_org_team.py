@@ -53,14 +53,14 @@ options:
   maintainers:
     description: List GitHub IDs for organization members who will become team maintainers.
     type: list
-    element: string
+    elements: string
     required: False
     default: []
   members:
     description: List GitHub IDs for organization members who will become team
     members.
     type: list
-    element: string
+    elements: string
     required: False
     default: []
   exclusive:
