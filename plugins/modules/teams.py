@@ -14,6 +14,10 @@ description:
   - Manages team members inside of the organization repository
 options:
   root:
+    description: Checkout directory
+    type: str
+    required: False
+  token:
     description: GitHub token
     type: str
     required: True

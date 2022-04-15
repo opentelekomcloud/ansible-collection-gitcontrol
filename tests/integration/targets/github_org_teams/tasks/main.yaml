@@ -2,7 +2,6 @@
 - module_defaults:
     opentelekomcloud.gitcontrol.github_org_teams:
       token: "{{ token }}"
-      root: "{{ root }}"
       organization: "{{ test_org }}"
       teams:
         - slug: team_a

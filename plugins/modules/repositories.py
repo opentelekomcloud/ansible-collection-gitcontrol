@@ -15,6 +15,10 @@ description:
   - Manages repository options
 options:
   root:
+    description: Checkout directory
+    type: str
+    required: False
+  token:
     description: GitHub token
     type: str
     required: True
@@ -66,8 +70,8 @@ class Repo(GitHubBase):
                 ):
                     return True
 
-            current_restrictions = current.get('retrictions')
-            target_restrictions = target.get('retrictions')
+            current_restrictions = current.get('restrictions')
+            target_restrictions = target.get('restrictions')
             current_pr_review = current.get('required_pull_request_reviews')
             target_pr_review = target.get('required_pull_request_reviews')
             current_status_checks = current.get('required_status_checks', {})

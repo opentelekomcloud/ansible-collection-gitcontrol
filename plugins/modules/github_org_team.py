@@ -22,12 +22,12 @@ options:
   state:
     description: Team state
     type: str
-    chocices: [present, absent]
+    choices: [present, absent]
     default: present
   slug:
     description: Team slug.
     type: str
-    required: true
+    required: True
   name:
     description: Team name.
     type: str
@@ -53,20 +53,19 @@ options:
   maintainers:
     description: List GitHub IDs for organization members who will become team maintainers.
     type: list
-    element: string
+    elements: str
     required: False
     default: []
   members:
-    description: List GitHub IDs for organization members who will become team
-    members.
+    description: List GitHub IDs for organization members who will become team members.
     type: list
-    element: string
+    elements: str
     required: False
     default: []
   exclusive:
     description: Whether only listed members and maintainers should be present.
     type: bool
-    default: false
+    default: False
 '''
 
 
@@ -75,7 +74,7 @@ opentelekomcloud.gitcontrol.github_org_team:
   description: List of organization teams statuses
   returned: always
   type: list
-  list_item: string
+  elements: str
 '''
 
 
@@ -98,7 +97,7 @@ from ansible_collections.opentelekomcloud.gitcontrol.plugins.module_utils.github
 class GHOrgTeamModule(GitHubBase):
     argument_spec = dict(
         organization=dict(type='str', required=True),
-        state=dict(type='str', chocices=['present', 'absent'],
+        state=dict(type='str', choices=['present', 'absent'],
                    default='present'),
         slug=dict(type='str', required=True),
         name=dict(type='str', required=False),

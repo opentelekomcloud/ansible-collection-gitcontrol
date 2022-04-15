@@ -21,29 +21,29 @@ options:
   members:
     description: Dictionary of organization members with permissions
     type: list
-    required: true
+    required: True
     elements: dict
     suboptions:
       login:
         description: User login.
         type: str
-        required: true
+        required: True
       name:
         description: Optional user name (for the reference, it is not used)
         type: str
-        required: false
+        required: False
       role:
         description: Member role.
         type: str
-        chocices: [member, admin]
+        choices: [member, admin]
         default: member
   exclusive:
     description: |
       Flag specifying whether unmanaged organization members should be removed
       or not.
     type: bool
-    default: false
-    required: false
+    default: False
+    required: False
 '''
 
 
@@ -52,7 +52,7 @@ members:
   description: List of organization member statuses
   returned: always
   type: list
-  list_item: string
+  elements: str
 '''
 
 
@@ -83,7 +83,7 @@ class GHOrgMembersModule(GitHubBase):
             options=dict(
                 login=dict(type='str', required=True),
                 name=dict(type='str', required=False),
-                role=dict(type='str', chocices=['owner', 'admin'],
+                role=dict(type='str', choices=['member', 'admin'],
                           default='member', required=False),
             ),
         ),

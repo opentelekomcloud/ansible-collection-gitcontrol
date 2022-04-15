@@ -62,7 +62,6 @@ REPOSITORY_UPDATABLE_ATTRIBUTES = [
 
 def base_argument_spec(**kwargs):
     spec = dict(
-        root=dict(type='str', required=False),
         token=dict(type='str', required=True, no_log=True),
         github_url=dict(type='str', default='https://api.github.com')
     )
