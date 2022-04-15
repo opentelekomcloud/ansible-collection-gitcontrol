@@ -14,6 +14,10 @@ author: "Artem Goncharov (@gtema)"
 description:
   - Manages organization repositories inside of the organization repository
 options:
+  root:
+    description: Checkout directory
+    type: str
+    required: False
   owner:
     description: Name of the GitHub organization
     type: str
@@ -153,12 +157,13 @@ options:
       permission:
         description: |
           The permission to grant to the team for this project. Can be one of:
-          - pull - can pull, but not push to or administer this repository.
-          - push - can pull and push, but not administer this repository.
-          - admin - can pull, push and administer this repository.
-          - maintain - Recommended for project managers who need to manage the
+
+          * pull - can pull, but not push to or administer this repository.
+          * push - can pull and push, but not administer this repository.
+          * admin - can pull, push and administer this repository.
+          * maintain - Recommended for project managers who need to manage the
           repository without access to sensitive or destructive actions.
-          - triage - Recommended for contributors who need to proactively
+          * triage - Recommended for contributors who need to proactively
           manage issues and pull requests without write access.
         type: str
         choices: [pull, push, admin, maintain, triage]
@@ -177,13 +182,13 @@ options:
         description: |
           The permission to grant the collaborator. Only valid on
           organization-owned repositories. Can be one of:
-          - pull - can pull, but not push to or administer this repository.
-          - push - can pull and push, but not administer this repository.
-          - admin - can pull, push and administer this repository.
-          - maintain - Recommended for project managers who need
-          to manage the repository without access to sensitive or
-          destructive actions.
-          - triage - Recommended for contributors who need to proactively
+
+          * pull - can pull, but not push to or administer this repository.
+          * push - can pull and push, but not administer this repository.
+          * admin - can pull, push and administer this repository.
+          * maintain - Recommended for project managers who need to manage the
+          repository without access to sensitive or destructive actions.
+          * triage - Recommended for contributors who need to proactively
           manage issues and pull requests without write access.
         type: str
         choices: [pull, push, admin, maintain, triage]
