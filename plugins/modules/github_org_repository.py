@@ -14,10 +14,6 @@ author: "Artem Goncharov (@gtema)"
 description:
   - Manages organization repositories inside of the organization repository
 options:
-  root:
-    description: Checkout directory
-    type: str
-    required: False
   owner:
     description: Name of the GitHub organization
     type: str
@@ -104,7 +100,6 @@ options:
       allow forking of private repositories, otherwise GitHub refuses setting
       this variable to any value.
     type: bool
-    default: False
   allow_merge_commit:
     description: |
       Either true to allow merging pull requests with a merge commit, or false
@@ -369,7 +364,7 @@ class GHOrgRepositoryModule(GitHubBase):
         auto_init=dict(type='bool', default=False),
         gitignore_template=dict(type='str'),
         license_template=dict(type='str'),
-        allow_forking=dict(type='bool', default=False),
+        allow_forking=dict(type='bool'),
         allow_squash_merge=dict(type='bool', default=True),
         allow_merge_commit=dict(type='bool', default=True),
         allow_rebase_merge=dict(type='bool', default=True),

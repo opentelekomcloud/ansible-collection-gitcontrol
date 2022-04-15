@@ -15,10 +15,6 @@ author: "Artem Goncharov (@gtema)"
 description:
   - Manages organization teams.
 options:
-  root:
-    description: Checkout directory
-    type: str
-    required: False
   organization:
     description: Name of the GitHub organization
     type: str
