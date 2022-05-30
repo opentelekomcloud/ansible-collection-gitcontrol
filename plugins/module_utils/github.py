@@ -534,12 +534,14 @@ class GitHubBase(GitBase):
     def update_branch_protection(self, owner, repo, branch, target):
         """Set branch protection rules"""
         # Checks takes precedence as being more fine granular
-        checks = target.get('required_status_checks', {}).get('checks', '')
-        contexts = target.get('required_status_checks', {}).get('contexts', [])
-        if checks:
-            target['required_status_checks'].pop('contexts', '')
-        elif contexts:
-            target['required_status_checks'].pop('checks', '')
+        required_status_checks = target.get('required_status_checks', {})
+        if required_status_checks:
+            checks = required_status_checks.get('checks', '')
+            contexts = required_status_checks.get('contexts', [])
+            if checks:
+                target['required_status_checks'].pop('contexts', '')
+            elif contexts:
+                target['required_status_checks'].pop('checks', '')
 
         self.request(
             method='PUT',
