@@ -408,7 +408,9 @@ class GHOrgRepositoryModule(GitHubBase):
                         require_code_owner_reviews=dict(
                             type='bool', default=True),
                         required_approving_review_count=dict(type='int',
-                                                             choices=range(1, 6))
+                                                             choices=[
+                                                                 1, 2, 3,
+                                                                 4, 5])
                     )
                 ),
                 restrictions=dict(

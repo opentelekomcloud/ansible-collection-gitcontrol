@@ -738,7 +738,7 @@ class GitHubBase(GitBase):
             status[login] = 'Invite cancelled'
 
         # Report current members that are not in the target state
-        for member, _ in current_members.items():
+        for member, ignore in current_members.items():
             if not exclusive:
                 status[member] = 'Not Managed'
             else:
@@ -857,13 +857,13 @@ class GitHubBase(GitBase):
         # In the exclusive mode drop maintainers and members not present in the
         # target state
         if exclusive:
-            for member, _ in current_members.items():
+            for member, ignore in current_members.items():
                 changed = True
                 if not check_mode:
                     self.delete_team_member(
                         owner, slug, member)
                 status['members'][member] = 'removed'
-            for member, _ in current_maintainers.items():
+            for member, ignore in current_maintainers.items():
                 changed = True
                 if not check_mode:
                     self.delete_team_member(

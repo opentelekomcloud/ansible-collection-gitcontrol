@@ -1,4 +1,4 @@
-ansible-base
+ansible-core
 ansible-lint==5.4.0
 pycodestyle==2.6.0
 flake8==3.8.4
