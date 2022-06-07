@@ -70,27 +70,32 @@ class Repo(GitHubBase):
                 ):
                     return True
 
-            current_restrictions = current.get('restrictions')
-            target_restrictions = target.get('restrictions')
-            current_pr_review = current.get('required_pull_request_reviews')
-            target_pr_review = target.get('required_pull_request_reviews')
+            current_restrictions = current.get('restrictions', {})
+            target_restrictions = target.get('restrictions', {})
+            current_pr_review = current.get('required_pull_request_reviews', {})
+            target_pr_review = target.get('required_pull_request_reviews', {})
             current_status_checks = current.get('required_status_checks', {})
             target_status_checks = target.get('required_status_checks', {})
-            if (current_status_checks.get(
-                'strict', False) != target_status_checks.get(
-                    'strict', False)):
-                return True
+            if target_status_checks:
+                if not current_status_checks:
+                    return True
+                if (current_status_checks.get(
+                    'strict', False) != target_status_checks.get(
+                        'strict', False)):
+                    return True
 
-            if (
-                set(
-                    current_status_checks.get('contexts', [])
-                ) != set(
-                    target_status_checks.get('contexts', [])
-                )
-            ):
-                return True
+                if (
+                    set(
+                        current_status_checks.get('contexts', [])
+                    ) != set(
+                        target_status_checks.get('contexts', [])
+                    )
+                ):
+                    return True
 
             if target_restrictions:
+                if not current_restrictions:
+                    return True
                 if (
                     set(
                         [x['login'] for x in current_restrictions['users']]
