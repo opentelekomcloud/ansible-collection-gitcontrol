@@ -1,7 +1,7 @@
 ---
 namespace: opentelekomcloud
 name: gitcontrol
-version: 0.0.1-dev3
+version: 0.2.0
 readme: README.rst
 authors:
   - Anton Sidenlnikov (@anton-sidelnikov)

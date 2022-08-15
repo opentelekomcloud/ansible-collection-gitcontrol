@@ -8,6 +8,10 @@
     vars:
       ansible_test_test_command: "integration"
       ansible_test_no_temp_unicode: true
+    files:
+      plugins/module_utils/git.py
+      plugins/module_utils/github.py
+      plugins/modules/github
     pre-run: tests/playbooks/pre.yaml
     secrets:
       - secret: gitcontrol-secret

@@ -1,0 +1,104 @@
+---
+- module_defaults:
+    opentelekomcloud.gitcontrol.gitea_org_repository:
+      token: "{{ gitea_token }}"
+      api_url: "{{ gitea_api_url }}"
+      owner: "{{ gitea_test_org }}"
+
+  block:
+
+    #    - name: Check mode
+    #      check_mode: true
+    #      opentelekomcloud.gitcontrol.gitea_org_repository:
+    #        name: test
+    #        description: "Test description"
+    #
+    #    - name: Apply
+    #      check_mode: false
+    #      opentelekomcloud.gitcontrol.gitea_org_repository:
+    #        name: test
+    #        description: "Test description"
+
+    - name: New repository
+      check_mode: false
+      opentelekomcloud.gitcontrol.gitea_org_repository:
+        name: test_gitcontrol
+        description: "Test description"
+        auto_init: true
+        allow_manual_merge: false
+        allow_merge_commits: false
+        allow_rebase: true
+        allow_rebase_explicit: false
+        allow_rebase_update: true
+        allow_squash_merge: true
+        archived: false
+        autodetect_manual_merge: false
+        default_branch: "main"
+        default_delete_branch_after_merge: true
+        default_merge_style: "squash"
+        enable_prune: true
+        has_issues: false
+        has_projects: false
+        has_wiki: false
+        has_pull_requests: true
+        private: false
+        trust_model: "default"
+        website: "nottest.com"
+        branch_protections:
+          - branch_name: main
+            block_on_official_review_requests: true
+            block_on_outdated_branch: true
+            block_on_rejected_reviews: true
+            dismiss_stale_approvals: true
+            enable_push: false
+            enable_status_check: true
+            status_check_contexts: ['a']
+            required_approvals: 2
+        teams:
+          - test_team
+      register: repo
+
+    - name: Update repository
+      check_mode: false
+      opentelekomcloud.gitcontrol.gitea_org_repository:
+        name: test_gitcontrol
+        description: "Test description"
+        auto_init: true
+        allow_manual_merge: false
+        allow_merge_commits: false
+        allow_rebase: true
+        allow_rebase_explicit: false
+        allow_rebase_update: true
+        allow_squash_merge: true
+        archived: false
+        autodetect_manual_merge: false
+        default_branch: "main"
+        default_delete_branch_after_merge: true
+        default_merge_style: "squash"
+        enable_prune: true
+        has_issues: true
+        has_projects: true
+        has_wiki: true
+        has_pull_requests: true
+        private: false
+        trust_model: "default"
+        website: "no2ttest.com"
+        branch_protections:
+          - branch_name: main
+            block_on_official_review_requests: false
+            block_on_outdated_branch: false
+            block_on_rejected_reviews: true
+            dismiss_stale_approvals: true
+            enable_push: false
+            enable_status_check: true
+            status_check_contexts: ['b']
+            required_approvals: 1
+        teams:
+          - test_team2
+      register: repo
+
+      #    - name: Delete repository
+      #      check_mode: false
+      #      opentelekomcloud.gitcontrol.gitea_org_repository:
+      #        name: test_gitcontrol
+      #        state: absent
