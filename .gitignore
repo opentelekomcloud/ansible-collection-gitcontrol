@@ -13,3 +13,4 @@ doc/build
 tmp
 tests/output
 tests/integration/integration_config.yml
+tests/integration/inventory
