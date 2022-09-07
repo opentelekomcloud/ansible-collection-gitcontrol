@@ -259,7 +259,28 @@ class GiteaBase(GitBase):
             if not check_mode:
                 current_repo = self.update_repo(owner, repo_name, **kwargs)
 
+        # Repository collaborator teams
+        target_teams = kwargs.get('teams')
+        if (
+            current_repo and target_teams is not None
+        ):
+            (changed, teams) = self._manage_repo_teams(
+                owner, repo_name, target_teams, check_mode)
+            current_repo['teams'] = teams
+
+        # Repository collaborators
+        target_collaborators = kwargs.get('collaborators')
+        if (
+            current_repo and target_collaborators is not None
+        ):
+            changed = self._manage_repo_collaborators(
+                owner, repo_name, target_collaborators, check_mode)
+
         # Branch protections
+
+        # Branch protection should be managed after teams and collaborators
+        # since it can require particular reviewer which still has no access.
+
         branch_protections = kwargs.pop('branch_protections', [])
         if current_repo and branch_protections is not None:
             current_repo['branch_protections'] = []
@@ -281,22 +302,6 @@ class GiteaBase(GitBase):
                             self.update_branch_protection(
                                 owner, repo_name, bp['branch_name'], bp)
                 current_repo['branch_protections'].append(bp)
-
-        # Repository collaborator teams
-        target_teams = kwargs.get('teams')
-        if (
-            current_repo and target_teams is not None
-        ):
-            changed = self._manage_repo_teams(
-                owner, repo_name, target_teams, check_mode)
-
-        # Repository collaborators
-        target_collaborators = kwargs.get('collaborators')
-        if (
-            current_repo and target_collaborators is not None
-        ):
-            changed = self._manage_repo_collaborators(
-                owner, repo_name, target_collaborators, check_mode)
 
         # If we need to archive - do this after updating everything else
         if (
@@ -382,6 +387,7 @@ class GiteaBase(GitBase):
     ):
         """Manage repository teams"""
         changed = False
+        teams = None
         current_teams = set([x['name'] for x in
                             self.get_repo_teams(owner, repo_name) or []])
         target_teams = set(target + ['Owners'])
@@ -393,7 +399,9 @@ class GiteaBase(GitBase):
             changed = True
             if not check_mode:
                 self.add_repo_team_access(owner, repo_name, new_team)
-        return changed
+        teams = set([x['name'] for x in
+                    self.get_repo_teams(owner, repo_name) or []])
+        return (changed, teams)
 
     def get_repo_collaborators(self, owner, repo):
         """Get repo collaborators"""
