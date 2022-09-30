@@ -463,6 +463,18 @@ class GitHubBase(GitBase):
         if not args:
             args = dict()
         args['name'] = repo
+
+        # if branch protections or default branch should be set
+        # at creation, the repository has to have at least one
+        # file. Therefore we allow github to automatically
+        # create the README.md
+        if 'branch_protections' in args:
+            if len(args['branch_protections']) > 0:
+                args['auto_init'] = True
+        if 'default_branch' in args:
+            if len(args['default_branch']) > 0:
+                args['auto_init'] = True
+
         rsp = self.request(
             method='POST',
             url=f"orgs/{owner}/repos",
@@ -1109,12 +1121,16 @@ class GitHubBase(GitBase):
         changed = False
         owner = kwargs.pop('owner')
         repo_name = kwargs.pop('name')
+        was_just_created = False
         current_repo = current if current else self.get_repo(owner, repo_name, ignore_missing=True)
         if not current_repo:
             changed = True
             if not check_mode:
                 current_repo = self.create_repo(
                     owner, repo_name, **kwargs)
+########
+                was_just_created = True
+########
             else:
                 return (changed, kwargs)
         archive = kwargs.pop('archived', False)
@@ -1128,7 +1144,18 @@ class GitHubBase(GitBase):
         if current_repo and self._is_repo_update_needed(current_repo, kwargs):
             changed = True
             if not check_mode:
-                current_repo = self.update_repo(owner, repo_name, **kwargs)
+
+########
+                new_kwargs = kwargs
+                # remove default_branch from payload as it would
+                # introduce branch handling for an empty repository
+                # causing the api to fail updating the repository.
+                if was_just_created:
+                    del new_kwargs['default_branch']
+                current_repo = self.update_repo(owner, repo_name, **new_kwargs)
+########
+
+
 
         # Repo topics
         # TODO(gtema): get rid of this as soon as this becomes part of native
