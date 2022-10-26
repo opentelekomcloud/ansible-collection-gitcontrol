@@ -46,6 +46,7 @@ REPOSITORY_UPDATABLE_ATTRIBUTES = [
     'allow_merge_commit',
     'allow_rebase_merge',
     'allow_squash_merge',
+    'allow_update_branch',
     'archived',
     'default_branch',
     'delete_branch_on_merge',
@@ -934,7 +935,8 @@ class GitHubBase(GitBase):
             return True
         else:
             for attr in ['allow_deletions', 'allow_force_pushes',
-                         'enforce_admins', 'required_linear_history',
+                         'allow_fork_syncing', 'enforce_admins',
+                         'required_linear_history',
                          'required_conversation_resolution']:
                 if (
                     attr in target
