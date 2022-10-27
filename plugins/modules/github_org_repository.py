@@ -118,6 +118,13 @@ options:
       auto-merge.
     type: bool
     default: False
+  allow_update_branch:
+    description: |
+      Either true to always allow a pull request head branch that is behind its
+      base branch to be updated even if it is not required to be up to date
+      before merging, or false otherwise. Default: false
+    type: bool
+    default: False
   delete_branch_on_merge:
     description: |
       Either true to allow automatically deleting head branches when pull
@@ -308,6 +315,13 @@ options:
           commit history.
         type: bool
         default: False
+      allow_fork_syncing:
+        description: |
+          Whether users can pull changes from upstream when the branch is
+          locked. Set to true to allow fork syncing. Set to false to prevent
+          fork syncing. Default: false
+        type: bool
+        default: false
       allow_force_pushes:
         description: |
           Permits force pushes to the protected branch by anyone with write
@@ -365,6 +379,7 @@ class GHOrgRepositoryModule(GitHubBase):
         allow_merge_commit=dict(type='bool', default=True),
         allow_rebase_merge=dict(type='bool', default=True),
         allow_auto_merge=dict(type='bool', default=False),
+        allow_update_branch=dict(type='bool', default=False),
         delete_branch_on_merge=dict(type='bool', default=False),
         default_branch=dict(type='str'),
         archived=dict(type='bool', default=False),
@@ -372,6 +387,7 @@ class GHOrgRepositoryModule(GitHubBase):
         branch_protections=dict(
             type='list', required=False, elements='dict', options=dict(
                 allow_deletions=dict(type='bool', default=False),
+                allow_fork_syncing=dict(type='bool', default=False),
                 allow_force_pushes=dict(type='bool', default=False),
                 branch=dict(type='str', required=True),
                 enforce_admins=dict(type='bool', default=False),
