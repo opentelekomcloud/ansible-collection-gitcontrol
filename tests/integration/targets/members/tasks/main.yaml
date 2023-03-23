@@ -1,13 +1,11 @@
 ---
-- module_defaults:
-    opentelekomcloud.gitcontrol.members:
-      root: "{{ root }}"
-      token: "{{ token }}"
+- name: Apply users - check mode
+  opentelekomcloud.gitcontrol.members:
+    root: "{{ root }}"
+    token: "{{ token }}"
+  check_mode: true
 
-  block:
-    - name: Apply users - check mode
-      opentelekomcloud.gitcontrol.members:
-      check_mode: true
-
-    - name: Apply users
-      opentelekomcloud.gitcontrol.members:
+- name: Apply users
+  opentelekomcloud.gitcontrol.members:
+    root: "{{ root }}"
+    token: "{{ token }}"

@@ -21,7 +21,7 @@
 - secret:
     name: gitcontrol-secret
     data:
-      token: !encrypted/pkcs1-oaep
+      github_token: !encrypted/pkcs1-oaep
         - QduY2mJaxznljZMLGoGE/LcHwb0Fk4QRcqX8DY+a8i320Rl0GdRE9yfFwkxfdFQ245UXT
           ZgcnHsuofTCbRQOWkt5eEN/+OqKqgvtDyP2QmOfOksbTUhnpWR1jV9/wDgqXIKTH7USgf
           EQbnaSBYCgUTIi2BZVhJBPEtb9AvO8h1NcrhCxR4R8Cw8PJ/bOzPAgfvZ/D9067S9smgz
@@ -32,6 +32,28 @@
           Lh28IR72f6JqALD01ontiYLWb7CdlxIa0zzNmmiA2oC/Zcvnef6hpSdvoFwmamY3HNUsM
           VsvUiEJiT0uRropSKEr4q3/uKbwsqqbQ8TkWj/CaKbZ+MeIR4N4WO54r81K8W7p/3W6pt
           qUFW1s/mMQWoYeQRh1gPHetpEgGfVP8d636Dk0hzK33vuvaJIfQdZxST7hkmuw=
+      gitea_token: !encrypted/pkcs1-oaep
+        - DdahPv/8fcUIVNPXPrraaXm8WKblT5IzMTH12fquGebo/IkGpuS0RSFJNjSvuPf959iwo
+          PJGM3bpSXdlcHy+FTXDuIJDX8YEwSIUjDdTQlhJAVNz3sp5tN6a81SKb+dnTZVhR/JA9o
+          klXdXFzrmZq/VdIPV1VDw9KdHzQmVhWhzJDSN2riIbbEDH0I64wymTN5p9ZnIMNH4yP3Y
+          O+na+QG6HvpHPQvg1zH9SJ6zxgvqze+2AFMu+zKw0+F69eEYqyb/ZL5awynEI8uRQCgS8
+          R67lDoNiz0zUQLRNxqLc1EPihID5C0u+vTTUi+d9AydBC3jqGufV0s11LyyOk36A0sogj
+          Uol4aEvKZ46rgovbrd6KbNOXjB0pJTdqXLGr5ycLNEYO32EaboNrnx7ynkGZgtg7EN0fo
+          pFoD0B9oqbW7XJpzRON+zlHZJYg0xVdjbK6jFCXAZEFfSpUUkKR/kdSjgXH4MktI9E1fd
+          P6XNI9POSea8pj/Ct4GdCPYRUOVlS2uGKz2Wz+4zpL+c5WPjun3EY0J9RhpNERF13Iw8L
+          YwntZI9IuP+6Dq7fZMnApcHkhMClgQIPW8UWEYwY+f4PFxYpcnnYSpJgLEo5Iu3pfQdgB
+          c7K9L1tILzhcaLVZTpkf3tBzr6xZea97rGWQSs9LoQLSX9kqEgRPlh+T40VNjQ=
+      gitea_api_url: !encrypted/pkcs1-oaep
+        - PMruLkiJmaMG+d/+p966Ta5+FXtAFpqb/yG+2Ukm8p3OKWj4ldMXD8/lDWzZivK76fYJ1
+          DlnMOJ9bBipb+WTFHVVWyZ9klLnBN//zaWHAvVht61I0fBKbRAvmGf0Fw5qtAn1Dp57bl
+          FE9YptJJeXBfqZwMuaVjT2W2biweebJSpLXUoKsh0sEaTs0lrT6i6pc0DvJGJTRWL1IxP
+          G5uSRy1HapqJxRLpxsytL6eHQV6cxDrtMIvLgRlPEVLsv4+vAP2QtjiQctuXHlr8ikl5s
+          CkywZS3h9ia7KxmIJvT/oAyg38sQgFKE9m5+AG6F5253GdM9raa9NiinkaoSP3NkZjozc
+          urdr/ai0azHgaGWytN6Q192uU6udRGQ2yIGfT4PJOijlIyX01TuclGp+LLbhaz40x8OEv
+          BCvgvgR+Khi1iBx5ua5UuX/RNJwrVtzn0+AkjCu0G4k4RiCDAS5+eY9GfkG6gmCmR6zBU
+          d19zv3zIvyVhx4cHvuXrx9uP9gyDSdD8ANMEq469JsFYJ6aaL7Q5n79u7F4QDkba93nix
+          QrV8pdmfAa1E43jc+Iz32b724c45JMYQyUAcnbcIxBw/PNH2g6sZbBMrJmeRfCl6vmXgk
+          CRFzNkNszOLwhfTCeuL1hB1xunOwGjC3sFZ7gq8Y2MW7lbivT+U+XH952w2acs=
 
 - project:
     merge-mode: squash-merge

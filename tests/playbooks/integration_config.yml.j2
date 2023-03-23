@@ -1,5 +1,8 @@
 ---
 # Here come the variables definitions for the integration tests
-token: "{{ gitcontrol.token }}"
+token: "{{ gitcontrol.github_token }}"
 root: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}/test_org"
 test_org: "opentelekomcloud-gitcontrol-test"
+gitea_test_org: "test_org"
+gitea_token: "{{ gitcontrol.gitea_token }}"
+gitea_api_url: "{{ gitcontrol.gitea_api_url }}"
