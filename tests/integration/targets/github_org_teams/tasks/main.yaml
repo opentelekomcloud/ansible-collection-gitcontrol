@@ -1,7 +1,8 @@
 ---
-- module_defaults:
+- name: Test GitHub org teams
+  module_defaults:
     opentelekomcloud.gitcontrol.github_org_teams:
-      token: "{{ token }}"
+      token: "{{ token }}"
       organization: "{{ test_org }}"
       teams:
         - slug: team_a

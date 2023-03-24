@@ -1,5 +1,6 @@
 ---
-- module_defaults:
+- name: Test gitea org repo
+  module_defaults:
     opentelekomcloud.gitcontrol.gitea_org_repository:
       token: "{{ gitea_token }}"
       api_url: "{{ gitea_api_url }}"

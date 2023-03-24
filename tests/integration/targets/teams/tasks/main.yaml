@@ -1,18 +1,17 @@
-- block:
-  - name: Apply Teams - check mode
-    opentelekomcloud.gitcontrol.teams:
-      root: "{{ root }}"
-      token: "{{ token }}"
-    check_mode: true
+- name: Apply Teams - check mode
+  opentelekomcloud.gitcontrol.teams:
+    root: "{{ root }}"
+    token: "{{ token }}"
+  check_mode: true
 
-  - name: Apply Teams
-    opentelekomcloud.gitcontrol.teams:
-      root: "{{ root }}"
-      token: "{{ token }}"
+- name: Apply Teams
+  opentelekomcloud.gitcontrol.teams:
+    root: "{{ root }}"
+    token: "{{ token }}"
 
-  - name: Drop team
-    opentelekomcloud.gitcontrol.github_org_team:
-      token: "{{ token }}"
-      organization: "{{ test_org }}"
-      slug: "storage"
-      state: "absent"
+- name: Drop team
+  opentelekomcloud.gitcontrol.github_org_team:
+    token: "{{ token }}"
+    organization: "{{ test_org }}"
+    slug: "storage"
+    state: "absent"

@@ -1,5 +1,6 @@
 ---
-- module_defaults:
+- name: Test Github Org members
+  module_defaults:
     opentelekomcloud.gitcontrol.github_org_members:
       token: "{{ token }}"
       organization: "{{ test_org }}"

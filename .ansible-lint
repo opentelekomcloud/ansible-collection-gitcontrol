@@ -1,3 +1,11 @@
+---
 exclude_paths:
   - tests/playbooks
   - .zuul.yaml
+skip_list:
+  - args[module]
+  - name[casing]
+  - name[play]
+  - galaxy[no-changelog]
+  - galaxy[tags]
+  - galaxy[version-incorrect]

@@ -1,27 +1,27 @@
-- block:
-  - name: Apply Teams as dependency
-    opentelekomcloud.gitcontrol.github_org_teams:
-      token: "{{ token }}"
-      organization: "{{ test_org }}"
-      teams:
-        - slug: test_b
-          description: Test team
-          privacy: closed
+---
+- name: Apply Teams as dependency
+  opentelekomcloud.gitcontrol.github_org_teams:
+    token: "{{ token }}"
+    organization: "{{ test_org }}"
+    teams:
+      - slug: test_b
+        description: Test team
+        privacy: closed
 
-  - name: Apply Repositories - check mode
-    opentelekomcloud.gitcontrol.repositories:
-      root: "{{ root }}"
-      token: "{{ token }}"
-    check_mode: true
+- name: Apply Repositories - check mode
+  opentelekomcloud.gitcontrol.repositories:
+    root: "{{ root }}"
+    token: "{{ token }}"
+  check_mode: true
 
-  - name: Apply Repositories
-    opentelekomcloud.gitcontrol.repositories:
-      root: "{{ root }}"
-      token: "{{ token }}"
-    register: repos
+- name: Apply Repositories
+  opentelekomcloud.gitcontrol.repositories:
+    root: "{{ root }}"
+    token: "{{ token }}"
+  register: repos
 
-  - name: Apply Repositories - Idempotency check
-    opentelekomcloud.gitcontrol.repositories:
-      root: "{{ root }}"
-      token: "{{ token }}"
-    register: repos
+- name: Apply Repositories - Idempotency check
+  opentelekomcloud.gitcontrol.repositories:
+    root: "{{ root }}"
+    token: "{{ token }}"
+  register: repos
