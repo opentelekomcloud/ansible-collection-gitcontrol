@@ -289,8 +289,14 @@ options:
           Restrict who can push to the protected branch. User, app,
           and team restrictions are only available for organization-owned repositories.
         type: dict
-        default: null
+        default: {}
         suboptions:
+          allow_org_members:
+             description: |
+              Set to true if you want to allow all org to have push access.
+              (in that case all other restrictions are ignored)
+            type: bool
+            default: True
           users:
             description: |
               The list of user logins with push access.
@@ -308,6 +314,7 @@ options:
               The list of app slugs with push access.
             type: list
             elements: str
+            default: []
       required_linear_history:
         description: |
           Enforces a linear commit Git history, which prevents anyone from
@@ -428,9 +435,10 @@ class GHOrgRepositoryModule(GitHubBase):
                 restrictions=dict(
                     type='dict', default={},
                     options=dict(
+                        allow_org_members=dict(type='bool', default=False),
                         users=dict(type='list', elements='str', default=[]),
                         teams=dict(type='list', elements='str', default=[]),
-                        apps=dict(type='list', elements='str')
+                        apps=dict(type='list', elements='str', default=[])
                     )
                 )
             )
