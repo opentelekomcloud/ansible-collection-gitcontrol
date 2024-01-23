@@ -9,3 +9,5 @@ skip_list:
   - galaxy[no-changelog]
   - galaxy[tags]
   - galaxy[version-incorrect]
+  - yaml[line-length]
+  - yaml[document-start]
