@@ -10,4 +10,4 @@ rules:
   indentation: disable
 
 ignore: |
-  zuul.yaml
+  .zuul.yaml
