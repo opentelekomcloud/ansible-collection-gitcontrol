@@ -223,7 +223,10 @@ class GitHubBase(GitBase):
                 if key in info:
                     error_data[key] = info[key]
 
-            self.save_error(f"{error_msg}: {error_data}")
+            error_data["response"] = response or "no response"
+            error_data["body"] = body or "no body"
+
+            self.save_error(f"request failed {error_msg}: {error_data}")
         elif status == 404 and ignore_missing:
             return None
         if status == 204:
