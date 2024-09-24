@@ -142,7 +142,7 @@ class GiteaBase(GitBase):
             )
             total_count = int(response.headers.get('X-Total-Count', 0))
             data = json.loads(content)
-            if type(data) == list:
+            if isinstance(data, list):
                 for rec in data:
                     yield rec
                     fetched += 1

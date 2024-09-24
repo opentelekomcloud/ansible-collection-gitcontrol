@@ -86,9 +86,9 @@ EXAMPLES = '''
       team1:
         description: description of the team
         maintainer:
-            - userA
+          - userA
         member:
-            - userB
+          - userB
 '''
 
 
