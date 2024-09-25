@@ -245,8 +245,7 @@ class GitHubBase(GitBase):
 
             url = get_links(response.headers).get("next", {}).get("url")
 
-            for item in json.loads(content):
-                yield item
+            yield from json.loads(content)
 
     def get_owner_teams(self, owner):
         """Get Team information"""

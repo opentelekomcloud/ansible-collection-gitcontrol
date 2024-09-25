@@ -146,6 +146,7 @@ options:
       An array of topics to add to the repository.
     type: list
     elements: str
+    default: []
   teams:
     description: |
       Repository teams with their permissions
@@ -289,7 +290,7 @@ options:
           Restrict who can push to the protected branch. User, app,
           and team restrictions are only available for organization-owned repositories.
         type: dict
-        default: null
+        default: {}
         suboptions:
           users:
             description: |
@@ -398,7 +399,7 @@ class GHOrgRepositoryModule(GitHubBase):
                     required_one_of=[('contexts', 'checks')],
                     options=dict(
                         strict=dict(type='bool', default=False),
-                        contexts=dict(type='list', elements='str'),
+                        contexts=dict(type='list', elements='str', default=[]),
                         checks=dict(
                             type='list', elements='dict', options=dict(
                                 context=dict(type='str'),
@@ -412,8 +413,8 @@ class GHOrgRepositoryModule(GitHubBase):
                     type='dict', options=dict(
                         dismissal_restrictions=dict(
                             type='dict', options=dict(
-                                users=dict(type='list', elements='str'),
-                                teams=dict(type='list', elements='str')
+                                users=dict(type='list', elements='str', default=[]),
+                                teams=dict(type='list', elements='str', default=[])
                             )
                         ),
                         dismiss_stale_reviews=dict(type='bool', default=True),

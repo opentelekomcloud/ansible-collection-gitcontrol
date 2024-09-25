@@ -21,17 +21,20 @@
 - secret:
     name: gitcontrol-secret
     data:
+      # github token belongs to otcecocert user. Use of any more powerful account
+      # is discouraged. Token permissions:
+      # admin:org, read:user, repo, user:email, delete_repo
       github_token: !encrypted/pkcs1-oaep
-        - QduY2mJaxznljZMLGoGE/LcHwb0Fk4QRcqX8DY+a8i320Rl0GdRE9yfFwkxfdFQ245UXT
-          ZgcnHsuofTCbRQOWkt5eEN/+OqKqgvtDyP2QmOfOksbTUhnpWR1jV9/wDgqXIKTH7USgf
-          EQbnaSBYCgUTIi2BZVhJBPEtb9AvO8h1NcrhCxR4R8Cw8PJ/bOzPAgfvZ/D9067S9smgz
-          cKZyOuloBhwVRskdbj5tbvViya44cGDs13j6Dpvv1C2tgdVctM/6iHwvXyOL2PtTu5LCP
-          3OVxgZCWx3XPzgfUl+QwL5KZSaDmsU6b7v5lr89HcTDrVmu02El6sEkMbUPQ/dDB6/7LK
-          fzMxCXz17bSWehIt1ASC+e+1jkfZKXHC5ss/6ebzRESdEeYDMb/6ueq3FPNslRbKwoGTK
-          54D8fSOIagjg+F+AYJjXaozslsj5S1Uv7HgGj6Ecgv75Hcx8/jJiUsqyHazx7EZ4CDBfG
-          Lh28IR72f6JqALD01ontiYLWb7CdlxIa0zzNmmiA2oC/Zcvnef6hpSdvoFwmamY3HNUsM
-          VsvUiEJiT0uRropSKEr4q3/uKbwsqqbQ8TkWj/CaKbZ+MeIR4N4WO54r81K8W7p/3W6pt
-          qUFW1s/mMQWoYeQRh1gPHetpEgGfVP8d636Dk0hzK33vuvaJIfQdZxST7hkmuw=
+        - eGDYtNbTaziv8creqr54Vs//UTP6Fl7KFi32FDHHrF7ClmAB2uM8zT/03B2ixslM5iWp2
+          rPXQyur6koQF32M3jnUOiH0F1HI0MLfwO93Gmi76xgfqez9vQ6fjuTahMWppkuLt7Eq7Y
+          XVbk4fEZ9TdqoNBGBkMIIrtfQJAa5xEwOg4Al+5CsNzrBsDHcppgoGyTEdx5zG1QwfXln
+          NV5N6yFjvffv0WuISqzRCpB2YIZt0aMzYPez0beyTqLe9K/FTkC+CCUJ5ONcKL8tLbs77
+          2XG13526PaNy8O8ksMEaEbZ6MoXxONJN6s9Rg5p+TkeUNnnqJrdaUDCqorCRCHOYQQeiS
+          cDIeBWudEHwnB8BPaiQkpZNHndnAoGCPQ2o0M/UiW/bp1GDprWIbnctkXVFCfdAt2ZhFB
+          oNf7/K/srqj4YwqVY77B0PjILk/6G/qv2/yBTf/4jP8mOR1YE7IrSVJLj5fyk5wgFApw6
+          yMnH8Kz/+WFU8SZDV/NgNyEwoW7jLL08fOdswTrOQ55ARcttDrSZUPdjHgTqWPZIxCNvW
+          85KWNGsAcAIiuC4jgN1EJoodR+mExPT8hnpy1hM1EizQG2BVSkfibkWq0aQh5Yic8EmGI
+          /s4WT7x4sGKjW89hIN1E031aZnIBJnnNRClauKnXpHUmC140G1ih5crc/RAZ3M=
       gitea_token: !encrypted/pkcs1-oaep
         - DdahPv/8fcUIVNPXPrraaXm8WKblT5IzMTH12fquGebo/IkGpuS0RSFJNjSvuPf959iwo
           PJGM3bpSXdlcHy+FTXDuIJDX8YEwSIUjDdTQlhJAVNz3sp5tN6a81SKb+dnTZVhR/JA9o
