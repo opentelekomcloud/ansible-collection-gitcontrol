@@ -290,7 +290,6 @@ options:
           Restrict who can push to the protected branch. User, app,
           and team restrictions are only available for organization-owned repositories.
         type: dict
-        default: {}
         suboptions:
           users:
             description: |
@@ -427,7 +426,7 @@ class GHOrgRepositoryModule(GitHubBase):
                     )
                 ),
                 restrictions=dict(
-                    type='dict', default={},
+                    type='dict',
                     options=dict(
                         users=dict(type='list', elements='str', default=[]),
                         teams=dict(type='list', elements='str', default=[]),
