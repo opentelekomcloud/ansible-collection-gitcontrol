@@ -124,6 +124,48 @@
             permission: pull
         branch_protections: "{{ test_branch_protections }}"
 
+    - name: Update repository branch protections with "null" restrictions
+      opentelekomcloud.gitcontrol.github_org_repository:
+        name: test2
+        description: "Test description"
+        homepage: "https://test.com"
+        archived: false
+        has_issues: false
+        has_projects: false
+        has_wiki: false
+        visibility: public
+        is_template: false
+        auto_init: true
+        allow_squash_merge: true
+        allow_merge_commit: true
+        allow_rebase_merge: true
+        allow_auto_merge: true
+        delete_branch_on_merge: true
+        default_branch: main
+        topics: ['a', 'b']
+        teams:
+          - slug: team_c
+            permission: push
+        collaborators:
+          - username: g2tema
+            permission: pull
+        branch_protections:
+          - branch: main
+            restrictions:
+            required_status_checks:
+              strict: true
+              checks:
+                - context: context_app
+                  app_id: 152782
+            enforce_admins: true
+            required_pull_request_reviews:
+              dismissal_restrictions:
+                users: []
+                teams: []
+              dismiss_stale_reviews: true
+              require_code_owner_reviews: true
+              required_approving_review_count: 2
+
     - name: Drop repository
       opentelekomcloud.gitcontrol.github_org_repository:
         name: test2

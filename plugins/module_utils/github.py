@@ -542,6 +542,10 @@ class GitHubBase(GitBase):
                 target['required_status_checks'].pop('contexts', '')
             elif contexts:
                 target['required_status_checks'].pop('checks', '')
+        # Restrictions is a mandatory param that supports being "null"
+        restrictions = target.setdefault("restrictions", None)
+        if restrictions == {}:
+            target["restrictions"] = None
 
         self.request(
             method='PUT',
@@ -946,8 +950,8 @@ class GitHubBase(GitBase):
                 ):
                     return True
 
-        current_restrictions = current.get('restrictions', {})
-        target_restrictions = target.get('restrictions', {})
+        current_restrictions = current.get('restrictions')
+        target_restrictions = target.get('restrictions')
         current_pr_review = current.get('required_pull_request_reviews', {})
         target_pr_review = target.get('required_pull_request_reviews', {})
         current_status_checks = current.get('required_status_checks', {})
@@ -985,6 +989,9 @@ class GitHubBase(GitBase):
             ):
                 return True
 
+        # GH api supports "null" as a way to disable restrictions on the branch
+        if not target_restrictions and current_restrictions or target_restrictions and not current_restrictions:
+            return True
         if target_restrictions:
             for case in [
                 ('users', 'login'),
