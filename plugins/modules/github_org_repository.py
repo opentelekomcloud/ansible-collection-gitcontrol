@@ -291,12 +291,6 @@ options:
           and team restrictions are only available for organization-owned repositories.
         type: dict
         suboptions:
-          allow_org_members:
-            description: |
-              Set to true if you want to allow all org to have push access.
-              (in that case all other restrictions are ignored)
-            type: bool
-            default: False
           users:
             description: |
               The list of user logins with push access.
@@ -435,7 +429,6 @@ class GHOrgRepositoryModule(GitHubBase):
                 restrictions=dict(
                     type='dict',
                     options=dict(
-                        allow_org_members=dict(type='bool', default=False),
                         users=dict(type='list', elements='str', default=[]),
                         teams=dict(type='list', elements='str', default=[]),
                         apps=dict(type='list', elements='str', default=[])

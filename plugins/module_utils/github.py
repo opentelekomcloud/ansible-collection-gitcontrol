@@ -1129,23 +1129,6 @@ class GitHubBase(GitBase):
         owner = kwargs.pop('owner')
         repo_name = kwargs.pop('name')
         current_repo = current if current else self.get_repo(owner, repo_name, ignore_missing=True)
-
-        # Rework the provided settings
-        # The Github API
-        # (https://docs.github.com/de/rest/branches/branch-protection?apiVersion=2022-11-28#update-branch-protection)
-        # describes that you have to set the value to "null" to completely disable restrictions in the org
-        # Due to the fact that the Ansible parameter validation specified in github_org_repository.py specifies
-        # that this value needs to be a dict, the traditional way to set this value to "null"  in the yaml file
-        # is not valid anymore, therefore the flag allow_org_members can be used to achieve this
-        new_branch_protections = []
-        for branch_protection in kwargs['branch_protections']:
-            if branch_protection["restrictions"].get("allow_org_members", False):
-                branch_protection["restrictions"] = None
-            if "allow_org_members" in branch_protection:
-                del branch_protection["restrictions"]["allow_org_members"]
-            new_branch_protections.append(branch_protection)
-        kwargs['branch_protections'] = new_branch_protections
-
         if not current_repo:
             changed = True
             if not check_mode:
