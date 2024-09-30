@@ -802,7 +802,9 @@ class GitHubBase(GitBase):
                     maintainers=target.get('maintainer', [])
                 )
                 if current is None:
-                    raise RuntimeError(f"Unable to create team: {slug} : {target}")
+                    self.save_error(f"Unable to create team: {slug} / {target} with "
+                                    f"maintainers : {', '.join(target.get('maintainer', []))} "
+                                    "(all maintainers must be completely onboarded)")
                 slug = current['slug']
             else:
                 is_existing = False
