@@ -223,7 +223,9 @@ class GitHubBase(GitBase):
                 if key in info:
                     error_data[key] = info[key]
 
-            self.save_error(f"{error_msg}: {error_data}")
+            error_data["response"] = response or "no response"
+            error_data["body"] = body or "no body"
+            self.save_error(f"request failed {error_msg}: {error_data}")
         elif status == 404 and ignore_missing:
             return None
         if status == 204:
@@ -251,16 +253,15 @@ class GitHubBase(GitBase):
 
     def get_owner_teams(self, owner):
         """Get Team information"""
-        rsp = self.paginated_request(
-            method='GET',
+        return self.paginated_request(
             url=f'orgs/{owner}/teams',
+            error_msg=f"Cannot fetch teams for {owner}"
         )
-        return rsp
 
     def get_team(self, owner, name, ignore_missing=False):
         return self.request(
             url=f"orgs/{owner}/teams/{name}",
-            error_msg="Error fetching {owner}/{team} team",
+            error_msg=f"Error fetching {owner}/{name} team",
             ignore_missing=ignore_missing
         )
 
@@ -319,7 +320,7 @@ class GitHubBase(GitBase):
             method='GET',
             url=(f"orgs/{owner}/"
                  f"teams/{team}/members?role={role}"),
-            error_msg=f"Cannot fetch team {team}@{owner} {role}s"
+            error_msg=f"Cannot fetch team {team}@{owner} with role {role}"
         )
 
     def get_team_repo_permissions(self, owner, team, repo):
@@ -570,7 +571,7 @@ class GitHubBase(GitBase):
 
     def get_repo_collaborators(self, owner, repo, affiliation='direct'):
         """Get repo collaborators"""
-        return self.request(
+        return self.paginated_request(
             method='GET',
             url=(f"repos/{owner}/{repo}/collaborators?affiliation={affiliation}"),
             error_msg=f"Cannot fetch repo {owner}/{repo} collaborators"
@@ -782,6 +783,7 @@ class GitHubBase(GitBase):
         is_existing = True
         team_status = 'unchanged'
         if not current:
+
             # Create new team
             changed = True
             team_status = 'created'
@@ -794,6 +796,10 @@ class GitHubBase(GitBase):
                     parent=target.get('parent'),
                     maintainers=target.get('maintainer', [])
                 )
+                if current is None:
+                    self.save_error(f"Unable to create team: {slug} / {target} with "
+                                    f"maintainers : {', '.join(target.get('maintainer', []))} "
+                                    "(all maintainers must be completely onboarded)")
                 slug = current['slug']
             else:
                 is_existing = False
