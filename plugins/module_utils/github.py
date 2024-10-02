@@ -234,11 +234,9 @@ class GitHubBase(GitBase):
             return json.loads(body)
 
     def paginated_request(self, url, headers=None, timeout=15, **kwargs):
-
         if not url.startswith('http'):
             url = f"{self.gh_url}/{url}"
 
-        result = []
         while url:
             content, response, info = self._request(
                 method='GET',
@@ -250,11 +248,8 @@ class GitHubBase(GitBase):
                 break
 
             url = get_links(response.headers).get("next", {}).get("url")
-            fetched_items = json.loads(content)
-            for item in fetched_items:
-                result.append(item)
 
-        return result
+            yield from json.loads(content)
 
     def get_owner_teams(self, owner):
         """Get Team information"""
@@ -325,7 +320,7 @@ class GitHubBase(GitBase):
             method='GET',
             url=(f"orgs/{owner}/"
                  f"teams/{team}/members?role={role}"),
-            error_msg=f"Cannot fetch team {team}@{owner} for role {role}"
+            error_msg=f"Cannot fetch team {team}@{owner} with role {role}"
         )
 
     def get_team_repo_permissions(self, owner, team, repo):
