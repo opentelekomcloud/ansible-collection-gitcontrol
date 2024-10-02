@@ -242,6 +242,8 @@ class GitHubBase(GitBase):
                 headers=headers,
                 timeout=timeout,
             )
+            if info["status"] == 404:
+                break
 
             url = get_links(response.headers).get("next", {}).get("url")
 
@@ -249,7 +251,7 @@ class GitHubBase(GitBase):
 
     def get_owner_teams(self, owner):
         """Get Team information"""
-        rsp = self.request(
+        rsp = self.paginated_request(
             method='GET',
             url=f'orgs/{owner}/teams',
         )
@@ -313,7 +315,7 @@ class GitHubBase(GitBase):
 
     def get_team_members(self, owner, team, role='maintainer'):
         """Get team members"""
-        return self.request(
+        return self.paginated_request(
             method='GET',
             url=(f"orgs/{owner}/"
                  f"teams/{team}/members?role={role}"),
@@ -558,7 +560,7 @@ class GitHubBase(GitBase):
 
     def get_repo_teams(self, owner, repo):
         """Get repo teams"""
-        rsp = self.request(
+        rsp = self.paginated_request(
             method='GET',
             url=(f"repos/{owner}/{repo}/teams"),
             error_msg=f"Cannot fetch team {owner}/{repo} teams"
@@ -881,7 +883,7 @@ class GitHubBase(GitBase):
         # Get current org teams
         status = dict()
         changed = False
-        current_teams = self.get_owner_teams(owner)
+        current_teams = list(self.get_owner_teams(owner))
         required_team_slugs = []
         if current_teams is None:
             self.fail_json(
@@ -895,7 +897,7 @@ class GitHubBase(GitBase):
             current = None
             # Find current team
             for t in current_teams:
-                if t['slug'] == slug:
+                if t['slug'].lower() == slug.lower():
                     current = t
                     break
 
