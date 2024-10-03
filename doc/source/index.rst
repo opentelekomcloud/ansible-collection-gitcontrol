@@ -204,7 +204,7 @@ To apply changes in your organization repositories run:
    ansible-playbook playbooks/run.yaml \
      -e github_repos_state=present \
      -e gitstyring_root_dir=../org \
-     -e gitub_token=SECRET
+     -e github_token=SECRET
 
 Testing
 -------
