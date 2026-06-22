@@ -6,7 +6,7 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 module: teams
-short_description: Manage GitHub Organization Teams
+short_description: Manage GitHub Teams in Organization
 extends_documentation_fragment: opentelekomcloud.gitcontrol.git
 version_added: "0.0.1"
 author: "Artem Goncharov (@gtema)"
