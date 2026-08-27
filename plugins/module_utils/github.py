@@ -1134,11 +1134,11 @@ class GitHubBase(GitBase):
             else:
                 return (changed, kwargs)
         archive = kwargs.pop('archived', False)
-        if (
-            current_repo
-            and archive and current_repo.get('archived')
-        ):
-            # Do nothing for the archived repo
+        if current_repo and current_repo.get('archived'):
+            # GitHub rejects writes to an archived repo (403), so nothing below
+            # can be reconciled. This is independent of the desired `archived`
+            # flag: a repo archived outside of git control would otherwise fail
+            # the whole run.
             return (changed, current_repo)
 
         if current_repo and self._is_repo_update_needed(current_repo, kwargs):
