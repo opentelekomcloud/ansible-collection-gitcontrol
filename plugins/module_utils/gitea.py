@@ -247,11 +247,11 @@ class GiteaBase(GitBase):
                 return (changed, kwargs)
 
         archive = kwargs.pop('archived', False)
-        if (
-            current_repo
-            and archive and current_repo.get('archived')
-        ):
-            # Do nothing for the archived repo
+        if current_repo and current_repo.get('archived'):
+            # Gitea answers every write to an archived repo with 423 Locked, so
+            # nothing below can be reconciled. This is independent of the
+            # desired `archived` flag: a repo archived outside of git control
+            # would otherwise fail the whole run on branch protections.
             return (changed, current_repo)
 
         if current_repo and self._is_repo_update_needed(current_repo, kwargs):
