@@ -41,6 +41,42 @@ class Repo(GitHubBase):
         supports_check_mode=True
     )
 
+    def _validate_repo_visibility(self, owner, repo, repo_dict):
+        """Validate the two GitHub repository visibility representations."""
+        if 'private' in repo_dict and not isinstance(
+            repo_dict['private'], bool
+        ):
+            return (
+                f"Skipping repository {owner}/{repo}: invalid visibility "
+                f"configuration; 'private' must be a boolean."
+            )
+
+        if (
+            'visibility' in repo_dict
+            and repo_dict['visibility'] not in ['public', 'private', 'internal']
+        ):
+            return (
+                f"Skipping repository {owner}/{repo}: invalid visibility "
+                f"configuration; 'visibility' must be one of 'public', "
+                f"'private', or 'internal'."
+            )
+
+        if 'private' not in repo_dict or 'visibility' not in repo_dict:
+            return None
+
+        expected_private = repo_dict['visibility'] == 'private'
+        if repo_dict['private'] != expected_private:
+            return (
+                f"Skipping repository {owner}/{repo}: conflicting visibility "
+                f"configuration; private={repo_dict['private']} is not "
+                f"compatible with visibility='{repo_dict['visibility']}'. "
+                f"Use private=true with visibility='private', or "
+                f"private=false with visibility='public' or 'internal'. "
+                f"You may also specify only one of these parameters."
+            )
+
+        return None
+
     def _is_repo_update_needed(self, current, target):
         for attr in [
             'description', 'homepage', 'private', 'visibility',
@@ -181,11 +217,19 @@ class Repo(GitHubBase):
         config = self.get_config()
         changed = False
         status = dict()
+        warnings = []
 
         for owner, val in config.items():
             status[owner] = dict()
             for repo, repo_dict in val['repositories'].items():
                 status[owner][repo] = dict()
+                visibility_warning = self._validate_repo_visibility(
+                    owner, repo, repo_dict)
+                if visibility_warning:
+                    warnings.append(visibility_warning)
+                    status[owner][repo]['error'] = visibility_warning
+                    continue
+
                 current_repo = self.get_repo(owner, repo, ignore_missing=True)
 
                 if not current_repo:
@@ -193,8 +237,6 @@ class Repo(GitHubBase):
                         repo_args = dict(
                             description=repo_dict.get('description'),
                             homepage=repo_dict.get('homepage'),
-                            private=repo_dict.get('private', False),
-                            visibility=repo_dict.get('visibility', 'public'),
                             has_issues=repo_dict.get('has_issues', True),
                             has_projects=repo_dict.get('has_projects', True),
                             has_wiki=repo_dict.get('has_wiki', True),
@@ -211,20 +253,55 @@ class Repo(GitHubBase):
                             delete_branch_on_merge=repo_dict.get(
                                 'delete_branch_on_merge', False)
                         )
-                        for k in ['gitignore_template', 'license_template']:
+                        for k in [
+                            'gitignore_template', 'license_template',
+                            'private', 'visibility'
+                        ]:
                             if k in repo_dict:
                                 repo_args[k] = repo_dict[k]
+                        if 'visibility' in repo_args:
+                            # GitHub accepts either representation. Prefer the
+                            # more expressive visibility field when supplied.
+                            repo_args.pop('private', None)
                         current_repo = self.create_repo(
                             owner, repo, **repo_args)
 
-                if current_repo and current_repo.get('archived', False):
-                    # Not doing anything on archived repos
-                    continue
+                target_archived = repo_dict.get('archived')
+                was_archived = (
+                    current_repo
+                    and current_repo.get('archived', False)
+                )
+                archive_after_updates = (
+                    target_archived is True
+                    or (was_archived and target_archived is None)
+                )
+                repo_update_args = dict(repo_dict)
+                repo_update_args.pop('archived', None)
+                repo_update_needed = (
+                    current_repo
+                    and self._is_repo_update_needed(
+                        current_repo, repo_update_args)
+                )
 
-                if current_repo and self._is_repo_update_needed(current_repo, repo_dict):
+                if current_repo and current_repo.get('archived', False):
+                    if target_archived is False or repo_update_needed:
+                        # GitHub repositories are read-only while archived.
+                        # Unarchive first, apply settings, then archive again
+                        # at the end if that is the requested target state.
+                        changed = True
+                        if not self.ansible.check_mode:
+                            current_repo = self.update_repo(
+                                owner, repo, archived=False)
+                    else:
+                        continue
+
+                if current_repo and repo_update_needed:
                     changed = True
                     if not self.ansible.check_mode:
-                        self.update_repo(owner, repo, **repo_dict)
+                        if 'visibility' in repo_update_args:
+                            repo_update_args.pop('private', None)
+                        current_repo = self.update_repo(
+                            owner, repo, **repo_update_args)
                 # Current state is too huge to return it
                 status[owner][repo]['description'] = repo_dict
 
@@ -298,17 +375,29 @@ class Repo(GitHubBase):
 
                     status[owner][repo]['branch_protection'] = tmpl
 
+                if (
+                    current_repo
+                    and archive_after_updates
+                    and not current_repo.get('archived', False)
+                ):
+                    changed = True
+                    if not self.ansible.check_mode:
+                        current_repo = self.update_repo(
+                            owner, repo, archived=True)
+
         if len(self.errors) == 0:
             self.exit_json(
                 changed=changed,
                 repositories=status,
-                errors=self.errors
+                errors=self.errors,
+                warnings=warnings
             )
         else:
             self.fail_json(
                 msg='Failures occured',
                 errors=self.errors,
-                repositories=status
+                repositories=status,
+                warnings=warnings
             )
 
 
