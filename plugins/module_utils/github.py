@@ -224,7 +224,12 @@ class GitHubBase(GitBase):
                     error_data[key] = info[key]
 
             error_data["response"] = response or "no response"
-            error_data["body"] = body or "no body"
+            error_data["response_body"] = body or "no body"
+            error_data["request_url"] = url
+            error_data["request_method"] = method
+            if 'json' in kwargs:
+                error_data["request_body"] = kwargs['json'] or 'no body'
+
             self.save_error(f"request failed {error_msg}: {error_data}")
         elif status == 404 and ignore_missing:
             return None
@@ -1126,6 +1131,15 @@ class GitHubBase(GitBase):
         owner = kwargs.pop('owner')
         repo_name = kwargs.pop('name')
         current_repo = current if current else self.get_repo(owner, repo_name, ignore_missing=True)
+
+        # When specifying a default branch on a repository which is still empty, the execution
+        # fails with the following error message:
+        # 'Cannot update default branch for an empty repository. Please init the repository and push first'
+        # Therefore we remove this option in that case.
+        if current_repo['size'] == 0:
+            del kwargs['default_branch']
+            self.ansible.warn(f"Repo {repo_name} does not yet have any branches or commits, cannot set the default branch")
+
         if not current_repo:
             changed = True
             if not check_mode:
