@@ -188,7 +188,7 @@
       register: unmanaged_apply
 
     - name: Repository must still be private and unchanged
-      assert:
+      ansible.builtin.assert:
         that:
           - unmanaged_apply.repository.private
           - not unmanaged_apply.changed
