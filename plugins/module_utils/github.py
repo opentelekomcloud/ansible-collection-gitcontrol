@@ -465,6 +465,7 @@ class GitHubBase(GitBase):
     def create_repo(self, owner, repo, **args):
         if not args:
             args = dict()
+        args = {k: v for k, v in args.items() if v is not None}
         args['name'] = repo
         rsp = self.request(
             method='POST',
@@ -933,7 +934,13 @@ class GitHubBase(GitBase):
 
     def _is_repo_update_needed(self, current, target):
         for attr in REPOSITORY_UPDATABLE_ATTRIBUTES:
-            if attr in target and target[attr] != current.get(attr):
+            # A None target means the attribute is not managed, so it must
+            # not count as drift and must not trigger an update.
+            if (
+                attr in target
+                and target[attr] is not None
+                and target[attr] != current.get(attr)
+            ):
                 return True
 
     def _is_branch_protection_update_needed(
@@ -1149,7 +1156,7 @@ class GitHubBase(GitBase):
         # Repo topics
         # TODO(gtema): get rid of this as soon as this becomes part of native
         # repository API
-        if current_repo and 'topics' in kwargs:
+        if current_repo and kwargs.get('topics') is not None:
             current_topics = current_repo['topics']
             if set(kwargs['topics']) != set(current_topics):
                 changed = True

@@ -38,7 +38,6 @@ options:
   private:
     description: Whether the repository is private.
     type: bool
-    default: False
   visibility:
     description: |
       Can be public or private. If your organization is associated with an
@@ -46,11 +45,9 @@ options:
       Server 2.20+, visibility can also be internal.
     type: str
     choices: [public, private, internal]
-    default: public
   has_issues:
     description: Either true to enable issues for this repository or false to disable them.
     type: bool
-    default: True
   has_projects:
     description: |
       Either true to enable projects for this repository or false to disable
@@ -58,18 +55,15 @@ options:
       disabled repository projects, the default is false, and if you pass true,
       the API returns an error.
     type: bool
-    default: True
   has_wiki:
     description: |
       Either true to enable the wiki for this repository or false to disable it.
     type: bool
-    default: True
   is_template:
     description: |
       Either true to make this repo available as a template repository or false
       to prevent it.
     type: bool
-    default: False
   auto_init:
     description: |
       Pass true to create an initial commit with empty README.
@@ -92,7 +86,6 @@ options:
       Either true to allow squash-merging pull requests, or false to prevent
       squash-merging.
     type: bool
-    default: True
   allow_forking:
     description: |
       Either true to allow private forks, or false to prevent private forks.
@@ -105,32 +98,27 @@ options:
       Either true to allow merging pull requests with a merge commit, or false
       to prevent merging pull requests with merge commits.
     type: bool
-    default: True
   allow_rebase_merge:
     description: |
       Either true to allow rebase-merging pull requests, or false to prevent
       rebase-merging.
     type: bool
-    default: True
   allow_auto_merge:
     description: |
       Either true to allow auto-merge on pull requests, or false to disallow
       auto-merge.
     type: bool
-    default: False
   allow_update_branch:
     description: |
       Either true to always allow a pull request head branch that is behind its
       base branch to be updated even if it is not required to be up to date
       before merging, or false otherwise. Default: false
     type: bool
-    default: False
   delete_branch_on_merge:
     description: |
       Either true to allow automatically deleting head branches when pull
       requests are merged, or false to prevent automatic deletion.
     type: bool
-    default: False
   default_branch:
     description: |
       Default branch name for the repository.
@@ -140,13 +128,11 @@ options:
       true to archive this repository. Note: You cannot unarchive repositories
       through the API.
     type: bool
-    default: False
   topics:
     description: |
       An array of topics to add to the repository.
     type: list
     elements: str
-    default: []
   teams:
     description: |
       Repository teams with their permissions
@@ -364,26 +350,30 @@ class GHOrgRepositoryModule(GitHubBase):
                    choices=['present', 'absent']),
         description=dict(type='str', required=False),
         homepage=dict(type='str', required=False),
-        private=dict(type='bool', default=False),
-        visibility=dict(type='str', default='public',
+        # No defaults below: a default would be indistinguishable from an
+        # explicitly requested value, so `default(omit)` in the caller would
+        # still push the default onto the repository and revert settings that
+        # are deliberately not managed here (e.g. flip a private repo public).
+        private=dict(type='bool'),
+        visibility=dict(type='str',
                         choices=['public', 'private', 'internal']),
-        has_issues=dict(type='bool', default=True),
-        has_projects=dict(type='bool', default=True),
-        has_wiki=dict(type='bool', default=True),
-        is_template=dict(type='bool', default=False),
+        has_issues=dict(type='bool'),
+        has_projects=dict(type='bool'),
+        has_wiki=dict(type='bool'),
+        is_template=dict(type='bool'),
         auto_init=dict(type='bool', default=False),
         gitignore_template=dict(type='str'),
         license_template=dict(type='str'),
         allow_forking=dict(type='bool'),
-        allow_squash_merge=dict(type='bool', default=True),
-        allow_merge_commit=dict(type='bool', default=True),
-        allow_rebase_merge=dict(type='bool', default=True),
-        allow_auto_merge=dict(type='bool', default=False),
-        allow_update_branch=dict(type='bool', default=False),
-        delete_branch_on_merge=dict(type='bool', default=False),
+        allow_squash_merge=dict(type='bool'),
+        allow_merge_commit=dict(type='bool'),
+        allow_rebase_merge=dict(type='bool'),
+        allow_auto_merge=dict(type='bool'),
+        allow_update_branch=dict(type='bool'),
+        delete_branch_on_merge=dict(type='bool'),
         default_branch=dict(type='str'),
-        archived=dict(type='bool', default=False),
-        topics=dict(type='list', elements='str', default=[]),
+        archived=dict(type='bool'),
+        topics=dict(type='list', elements='str'),
         branch_protections=dict(
             type='list', required=False, elements='dict', options=dict(
                 allow_deletions=dict(type='bool', default=False),
