@@ -170,3 +170,34 @@
       opentelekomcloud.gitcontrol.github_org_repository:
         name: test2
         state: absent
+
+    # Regression: unmanaged attributes must not be reverted to a default.
+    # Callers pass `private: "{{ repo.private | default(omit) }}"`, and an
+    # argument_spec default would reach the API as an explicit value and
+    # flip a private repository public.
+    - name: Create private repository
+      opentelekomcloud.gitcontrol.github_org_repository:
+        name: test_private
+        description: "Private repo"
+        private: true
+
+    - name: Apply without private/visibility/topics
+      opentelekomcloud.gitcontrol.github_org_repository:
+        name: test_private
+        description: "Private repo"
+      register: unmanaged_apply
+
+    - name: Repository must still be private and unchanged
+      assert:
+        that:
+          - unmanaged_apply.repository.private
+          - not unmanaged_apply.changed
+        fail_msg: >-
+          Omitted attributes were applied as defaults:
+          private={{ unmanaged_apply.repository.private }},
+          changed={{ unmanaged_apply.changed }}
+
+    - name: Drop private repository
+      opentelekomcloud.gitcontrol.github_org_repository:
+        name: test_private
+        state: absent
