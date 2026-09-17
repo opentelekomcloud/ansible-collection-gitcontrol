@@ -21,42 +21,42 @@
 - secret:
     name: gitcontrol-secret
     data:
-      # github token belongs to otcecocert user. Use of any more powerful account
-      # is discouraged. Token permissions:
-      # admin:org, read:user, repo, user:email, delete_repo
       github_token: !encrypted/pkcs1-oaep
-        - eGDYtNbTaziv8creqr54Vs//UTP6Fl7KFi32FDHHrF7ClmAB2uM8zT/03B2ixslM5iWp2
-          rPXQyur6koQF32M3jnUOiH0F1HI0MLfwO93Gmi76xgfqez9vQ6fjuTahMWppkuLt7Eq7Y
-          XVbk4fEZ9TdqoNBGBkMIIrtfQJAa5xEwOg4Al+5CsNzrBsDHcppgoGyTEdx5zG1QwfXln
-          NV5N6yFjvffv0WuISqzRCpB2YIZt0aMzYPez0beyTqLe9K/FTkC+CCUJ5ONcKL8tLbs77
-          2XG13526PaNy8O8ksMEaEbZ6MoXxONJN6s9Rg5p+TkeUNnnqJrdaUDCqorCRCHOYQQeiS
-          cDIeBWudEHwnB8BPaiQkpZNHndnAoGCPQ2o0M/UiW/bp1GDprWIbnctkXVFCfdAt2ZhFB
-          oNf7/K/srqj4YwqVY77B0PjILk/6G/qv2/yBTf/4jP8mOR1YE7IrSVJLj5fyk5wgFApw6
-          yMnH8Kz/+WFU8SZDV/NgNyEwoW7jLL08fOdswTrOQ55ARcttDrSZUPdjHgTqWPZIxCNvW
-          85KWNGsAcAIiuC4jgN1EJoodR+mExPT8hnpy1hM1EizQG2BVSkfibkWq0aQh5Yic8EmGI
-          /s4WT7x4sGKjW89hIN1E031aZnIBJnnNRClauKnXpHUmC140G1ih5crc/RAZ3M=
+        - nSGFVW6oslgExTSvDPZ2U3hD3zAXJEV53Sw+8KAY/2kPqjmOwsCGwR8SW2XnXTaYQAYa
+          Xaz13a/XWljTc74cFkVKLh3UhPkIdxjI5zVvIzCEEn2voZmYHPImiwuCxHp7gle/m0YL
+          3uAf+uacL4nS8Yv6lXptJWKMIQzVhrIHjFMVbYQqj+GBDpK+y85U3umftVycfG56xLCU
+          OpQM1xnLbX/pO5ToYp/aI6cZO4HTtmAESGwo+U9uSc1yrnm5rTKYoSJGKdsbvudA1m//
+          Q66tdMb4mvLmPj4bljTTydC7wyxxFgxnp23EhjylJ+xxewt7di4ABA61bozBcsSs4QxP
+          a56uCmM+xTeUZ70iCd4UBUuLz67C+dzmyv6100JVYsfuuwM5I6fOFNvGAYyR1NC3xW/P
+          fatXjNcNSM+1+hw8TBmkyNmtaDmk5joSIVjovarq7FFLI4uRN3+LQWfUr/aDv1BrHk5H
+          YtOU+13U0xC7vBQb1/gqVribLBa63ZdkKPFRnA6zV2Z5wcP+yUtIzAld6AepCbBPA8Nk
+          q2HAXAEcMopxzolQiboobA5tOIRx9K8X6qqN/SdxS31gfOjgsDGUqVnpgP6L5dTEJ9Pj
+          I48UXwT3ILlskg8eyH4WXsrEquiFIpTQ8Ymvzf2bNsq11UsP5LxN2hJ3+zZkFXp50pM+
+          Sjg=
       gitea_token: !encrypted/pkcs1-oaep
-        - DdahPv/8fcUIVNPXPrraaXm8WKblT5IzMTH12fquGebo/IkGpuS0RSFJNjSvuPf959iwo
-          PJGM3bpSXdlcHy+FTXDuIJDX8YEwSIUjDdTQlhJAVNz3sp5tN6a81SKb+dnTZVhR/JA9o
-          klXdXFzrmZq/VdIPV1VDw9KdHzQmVhWhzJDSN2riIbbEDH0I64wymTN5p9ZnIMNH4yP3Y
-          O+na+QG6HvpHPQvg1zH9SJ6zxgvqze+2AFMu+zKw0+F69eEYqyb/ZL5awynEI8uRQCgS8
-          R67lDoNiz0zUQLRNxqLc1EPihID5C0u+vTTUi+d9AydBC3jqGufV0s11LyyOk36A0sogj
-          Uol4aEvKZ46rgovbrd6KbNOXjB0pJTdqXLGr5ycLNEYO32EaboNrnx7ynkGZgtg7EN0fo
-          pFoD0B9oqbW7XJpzRON+zlHZJYg0xVdjbK6jFCXAZEFfSpUUkKR/kdSjgXH4MktI9E1fd
-          P6XNI9POSea8pj/Ct4GdCPYRUOVlS2uGKz2Wz+4zpL+c5WPjun3EY0J9RhpNERF13Iw8L
-          YwntZI9IuP+6Dq7fZMnApcHkhMClgQIPW8UWEYwY+f4PFxYpcnnYSpJgLEo5Iu3pfQdgB
-          c7K9L1tILzhcaLVZTpkf3tBzr6xZea97rGWQSs9LoQLSX9kqEgRPlh+T40VNjQ=
+        - XuUP4azy5uo98LW1Z0iDL73XHDkMXzOZA7x3MHtC3nGHZvRdjRJRsYZ76jVAT9RsWPd4
+          0RJILFbUv1vcJS57b/oP011fSe89LBMGZHUIBvT/yOWmZ+19h+0rknfPDiKn5d7x9sUr
+          yULV9gF+iTDS5D6totatj/RO/iIaogXsMdXASAX927+vbi4fr0rilm99bieGxFAEUHGS
+          Z6sebOU97+Piy+Xg6A4PTA7PxqLhUYa4aQT+oe1b4eO0viljS6EYm0WAeZfFRz6pXaIr
+          MBN/Xu+XEADCKM0LKiNBBO/9pLCEutjhkvdGtPWET+GecycEMOcOqytAmZuVI73Z37dK
+          xsRHd87QX68tW0fwC7gJdpp+4v+KPregmC5JrZxcCbcjbQIjSrrcEnnYxgRWteisjynn
+          I39fzEtjyob0twC0ZA9wQjsyyis1Au9SbSFdrXI0tMcYhCiSz1euVBxx0CWe7flTAU4J
+          xNxlMS+qSg1R5TPDqMvoyboO58ithoqLPWiwwjXEma+YQn6hjhU2N2jgPNOBCYHkp5Du
+          yOiXJi1qhveg20QFrdfeFTgjbZ6pTM49p3vUwHa85Nn/Tmt161Ejx8QbuHU1vPRnWOT9
+          JPsfFsIJDt5hs1S22/UU1H5DDXq80C6tiqtIC7XejnqNvgfoc8P5WtHL/AeibvF+3sKG
+          A2w=
       gitea_api_url: !encrypted/pkcs1-oaep
-        - PMruLkiJmaMG+d/+p966Ta5+FXtAFpqb/yG+2Ukm8p3OKWj4ldMXD8/lDWzZivK76fYJ1
-          DlnMOJ9bBipb+WTFHVVWyZ9klLnBN//zaWHAvVht61I0fBKbRAvmGf0Fw5qtAn1Dp57bl
-          FE9YptJJeXBfqZwMuaVjT2W2biweebJSpLXUoKsh0sEaTs0lrT6i6pc0DvJGJTRWL1IxP
-          G5uSRy1HapqJxRLpxsytL6eHQV6cxDrtMIvLgRlPEVLsv4+vAP2QtjiQctuXHlr8ikl5s
-          CkywZS3h9ia7KxmIJvT/oAyg38sQgFKE9m5+AG6F5253GdM9raa9NiinkaoSP3NkZjozc
-          urdr/ai0azHgaGWytN6Q192uU6udRGQ2yIGfT4PJOijlIyX01TuclGp+LLbhaz40x8OEv
-          BCvgvgR+Khi1iBx5ua5UuX/RNJwrVtzn0+AkjCu0G4k4RiCDAS5+eY9GfkG6gmCmR6zBU
-          d19zv3zIvyVhx4cHvuXrx9uP9gyDSdD8ANMEq469JsFYJ6aaL7Q5n79u7F4QDkba93nix
-          QrV8pdmfAa1E43jc+Iz32b724c45JMYQyUAcnbcIxBw/PNH2g6sZbBMrJmeRfCl6vmXgk
-          CRFzNkNszOLwhfTCeuL1hB1xunOwGjC3sFZ7gq8Y2MW7lbivT+U+XH952w2acs=
+        - vaRwLbd6yyckKlhrDQZ4TkD8XD7ISReev68HVOTnwX7tIlSNX4H5TdvWiiiehmEHCXUL
+          NN4wfYQ09GfsCXd4QTzjsJLH/hSzO5L4x63hCze3T2Jw3SK70vMSldDmtC9yR2/o3nCp
+          cluLAy0F3rRjTwCeLbqNpQfaRbsjCxzrlzMn24/p3QLX5GHxDOyP+lLe4VDxRkQhasr4
+          9XRLmRXV+C6hr12f0aLU+FTAZ77kyEo/p3DvFTF9voNtsGgWedslg0NEFrra4778ie8j
+          P6XqK/MZMlXxNEZ6LTO8/9xX92JzMpWCEYw0H3QoeTyUvWuKqP9n55qCdsUbDO5ZNg1P
+          dOU0VAMSmjs8EbQ0J6W1ajI1JEniw7jdDWCaePSnuwt43Yt9lzNjBX8PG8nFZf5W78Wu
+          ZkmZU86ibLoxPkOZc7yD768swzf0cXy1ghSmqAYqaFYnUi2pDMoP8BAZs2YVseTRCPpY
+          +Eu8AgbEvCy/SLusVLOPyctEBQvwDGJAU8e1FVKeiTH5zlaf4bxHQD3NQOVXCYDUW5Ii
+          ld8xnAGEZRi0LXcfYwOAgZOKA5dOB+mKOIoUHtZkKCzBS+SEOFngrECjEa9Sk5ng4JzX
+          Kcw0wmyVM5UxWCab+tu2v4t9GFeb5bbeTUfDgUMM1LhOSZeVKjsAVuTbGvdfEJ4Z24IP
+          uRA=
 
 - project:
     merge-mode: squash-merge
